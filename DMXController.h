@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <termios.h>
 
+#include <stdexcept>
 #include <vector>
 
 
@@ -115,7 +116,10 @@ DMXController::~DMXController() {
 
 
 void DMXController::setLightColor(unsigned int index, const Color &color) {
-	// FIXME: range check index
+	// range check index
+	if (index >= 100) {
+		throw std::runtime_error(std::string("Bad light index" + index));
+	}
 
 	unsigned int offset = index * 5 + 4 + 2;
 	dmxPacket[offset + 0] = color.red;
