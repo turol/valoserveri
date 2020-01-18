@@ -11,50 +11,75 @@
 #include <vector>
 
 
-int main(int argc, char *argv[]) {
-	std::vector<char> dmxPacket(517, 0);
 
-	// bad but eh
-	srand(time(nullptr));
+struct Color {
+	uint8_t  red;
+	uint8_t  green;
+	uint8_t  blue;
 
-	// TODO: put some magic into packet
+
+	Color()
+	: red(0)
+	, green(0)
+	, blue(0)
+	{
+	}
+
+	Color(const Color &)            noexcept = default;
+	Color(Color &&)                 noexcept = default;
+
+	Color &operator=(const Color &) noexcept = default;
+	Color &operator=(Color &&)      noexcept = default;
+
+	~Color() {}
+};
+
+
+class DMXController {
+	int                fd;
+	std::vector<char>  dmxPacket;
+
+public:
+
+	DMXController();
+
+	DMXController(const DMXController &)            noexcept = delete;
+	DMXController(DMXController &&)                 noexcept = delete;
+
+	DMXController &operator=(const DMXController &) noexcept = delete;
+	DMXController &operator=(DMXController &&)      noexcept = delete;
+
+	~DMXController();
+
+
+	void setLightColor(unsigned int index, const Color &color);
+
+	void update();
+};
+
+
+DMXController::DMXController()
+: fd(0)
+, dmxPacket(517, 0)
+{
+	// put some magic into packet
 	dmxPacket[0] = 0x7e;
 	dmxPacket[1] = 0x06;
 	dmxPacket[2] = 0x00;
 	dmxPacket[3] = 0x02;
 
-	uint8_t red = 0, green = 0, blue = 0;
-	if (argc == 4) {
-	    printf("command line %u %u %u\n", red, green, blue);
-	    red   = atoi(argv[1]);
-	    green = atoi(argv[2]);
-	    blue  = atoi(argv[3]);
-
-	} else {
-	    red   = rand() & 0xFF;
-	    green = rand() & 0xFF;
-	    blue  = rand() & 0xFF;
-	    printf("random %u %u %u\n", red, green, blue);
-	}
-
-	for (unsigned int i = 0; i < 25; i++) {
-		unsigned int offset = i * 5 + 4 + 2;
-		dmxPacket[offset + 0] = red;
-		dmxPacket[offset + 1] = green;
-		dmxPacket[offset + 2] = blue;
-		dmxPacket[offset + 3] = 255;
-		dmxPacket[offset + 4] = 0;
-	}
-
 	// terminator
 	dmxPacket[516] = 0xe7;
 
+	// TODO: allow configuring device name
+	// TODO: allow configuring number of lights
 	// open /dev/ttyUSB0
 	const char *ttyDeviceName = "/dev/ttyUSB0";
 	speed_t speed = B57600;
 
-	int tty_fd = open(ttyDeviceName, O_RDWR | O_NONBLOCK);
-	printf("open \"%s\": %d\n", ttyDeviceName, tty_fd);
+	fd = open(ttyDeviceName, O_RDWR | O_NONBLOCK);
+	// FIXME: fail gracefully if open fails
+	printf("open \"%s\": %d\n", ttyDeviceName, fd);
 
 	// set baud rate 56000
 	{
@@ -74,14 +99,65 @@ int main(int argc, char *argv[]) {
 		cfsetospeed(&tio, speed);
 		cfsetispeed(&tio, speed);
 
-		tcsetattr(tty_fd, TCSANOW, &tio);
+		tcsetattr(fd, TCSANOW, &tio);
 	}
 
+}
+
+
+DMXController::~DMXController() {
+	if (fd != 0) {
+		close(fd);
+		fd = 0;
+	}
+}
+
+
+void DMXController::setLightColor(unsigned int index, const Color &color) {
+	// FIXME: range check index
+
+	unsigned int offset = index * 5 + 4 + 2;
+	dmxPacket[offset + 0] = color.red;
+	dmxPacket[offset + 1] = color.green;
+	dmxPacket[offset + 2] = color.blue;
+	dmxPacket[offset + 3] = 255;
+	dmxPacket[offset + 4] = 0;
+}
+
+
+void DMXController::update() {
 	// write to tty
-	int retval = write(tty_fd, dmxPacket.data(), dmxPacket.size());
+	int retval = write(fd, dmxPacket.data(), dmxPacket.size());
 	printf("write returned %d\n", retval);
 
-	close(tty_fd);
+}
+
+
+int main(int argc, char *argv[]) {
+	DMXController dmx;
+
+	// bad but eh
+	srand(time(nullptr));
+
+	Color c;
+	if (argc == 4) {
+		printf("command line %u %u %u\n", c.red, c.green, c.blue);
+		c.red   = atoi(argv[1]);
+		c.green = atoi(argv[2]);
+		c.blue  = atoi(argv[3]);
+
+	} else {
+		c.red   = rand() & 0xFF;
+		c.green = rand() & 0xFF;
+		c.blue  = rand() & 0xFF;
+		printf("random %u %u %u\n", c.red, c.green, c.blue);
+	}
+
+	for (unsigned int i = 0; i < 25; i++) {
+		dmx.setLightColor(i, c);
+	}
+
+	dmx.update();
 
 	return 0;
 }
