@@ -14,7 +14,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	// TODO: put some magic into packet
 
 	// TODO: open /dev/ttyUSB0
-	const char *ttyDeviceName = "/dev/ttyS0";
+	const char *ttyDeviceName = "/dev/ttyUSB0";
 
 	int tty_fd = open(ttyDeviceName, O_RDWR | O_NONBLOCK);
 	printf("open \"%s\": %d\n", ttyDeviceName, tty_fd);
