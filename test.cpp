@@ -1,6 +1,8 @@
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -12,12 +14,29 @@
 int main(int /* argc */, char * /* argv */ []) {
 	std::vector<char> dmxPacket(517, 0);
 
+	// bad but eh
+	srand(time(nullptr));
+
 	// TODO: put some magic into packet
 	dmxPacket[0] = 0x7e;
 	dmxPacket[1] = 0x06;
 	dmxPacket[2] = 0x00;
 	dmxPacket[3] = 0x02;
 
+	for (unsigned int i = 0; i < 25; i++) {
+		unsigned int offset = i * 5 + 4 + 1;
+		uint8_t red   = rand() & 0xFF;
+		uint8_t green = rand() & 0xFF;
+		uint8_t blue  = rand() & 0xFF;
+
+		dmxPacket[offset + 0] = red;
+		dmxPacket[offset + 1] = green;
+		dmxPacket[offset + 2] = blue;
+		dmxPacket[offset + 3] = 255;
+		dmxPacket[offset + 4] = 0;
+	}
+
+	// terminator
 	dmxPacket[516] = 0xe7;
 
 	// open /dev/ttyUSB0
