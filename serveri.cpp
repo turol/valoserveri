@@ -74,7 +74,7 @@ std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsign
 
 
 int main(int /* argc */, char * /* argv */ []) {
-	// TODO: DMXController
+	DMXController dmx;
 
 	int port = 9909;
 
@@ -108,7 +108,7 @@ int main(int /* argc */, char * /* argv */ []) {
 		socklen_t fromLength = sizeof(from);
 
 		ssize_t len = recvfrom(fd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
-		printf("received %ld bytes from \"%s\":%d\n", len, inet_ntoa(from.sin_addr), ntohs(from.sin_port));
+		printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
 		// parse packet
 		auto lights = parseLightPacket(buffer, len);
@@ -116,8 +116,11 @@ int main(int /* argc */, char * /* argv */ []) {
 
 		// TODO: update lights
 		for (const auto &l : lights) {
-			printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
-		}
+                    printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
+                    dmx.setLightColor(l.index, l.color);
+                }
+
+                dmx.update();
 	}
 
 	close(fd);
