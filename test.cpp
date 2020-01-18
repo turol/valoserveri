@@ -141,11 +141,10 @@ int main(int argc, char *argv[]) {
 
 	Color c;
 	if (argc == 4) {
-		printf("command line %u %u %u\n", c.red, c.green, c.blue);
 		c.red   = atoi(argv[1]);
 		c.green = atoi(argv[2]);
 		c.blue  = atoi(argv[3]);
-
+		printf("command line %u %u %u\n", c.red, c.green, c.blue);
 	} else {
 		c.red   = rand() & 0xFF;
 		c.green = rand() & 0xFF;
