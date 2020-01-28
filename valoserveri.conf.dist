@@ -1,0 +1,17 @@
+[global]
+device = /dev/ttyUSB0
+listenAddress = 0.0.0.0
+udpPort = 9909
+wsPort = 9910
+lights = 2
+
+
+[light0]
+type = rgb
+address = 1
+
+
+[light1]
+type = uv
+address = 6
+
