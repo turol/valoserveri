@@ -1,0 +1,5 @@
+commit 1185eac0f0977654f9ac804055702e110bb4da91
+Author: Liam Mitchell <liamkarlmitchell@gmail.com>
+Date:   Mon Oct 14 01:03:01 2019 +1300
+
+    Add GetFloat (#15)
