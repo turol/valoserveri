@@ -1,6 +1,8 @@
 *~
+*.d
+*.o
 
-serveri
-test
+binaries/serveri-bin
+binaries/test-bin
 
 valoserveri.conf
