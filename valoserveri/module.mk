@@ -4,17 +4,19 @@ d              := $(dir)
 
 
 FILES:= \
+	Config.cpp \
+	Logger.cpp \
 	# empty line
 
 
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 
 
-serveri_MODULES:=
+serveri_MODULES:=date fmt
 serveri_SRC:=$(SRC_$(d)) $(dir)/serveri.cpp
 
 
-test_MODULES:=
+test_MODULES:=date fmt
 test_SRC:=$(SRC_$(d)) $(dir)/test.cpp
 
 

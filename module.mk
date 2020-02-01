@@ -48,11 +48,16 @@ LDFLAGS+=$(LTOLDFLAGS) $(OPTFLAGS)
 endif  # LTO
 
 
+# date tz
+CFLAGS+=-DHAS_REMOTE_API=0 -DUSE_OS_TZDB=1
+
 CFLAGS+=$(OPTFLAGS)
 
 CFLAGS+=-I.
 CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign
+CFLAGS+=-isystem$(TOPDIR)/foreign/date/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/fmt/include
 
 
 # (call directory-module, dirname)

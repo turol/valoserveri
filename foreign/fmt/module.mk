@@ -4,8 +4,7 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	date \
-	fmt \
+	src \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
