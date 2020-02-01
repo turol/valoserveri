@@ -1,0 +1,8 @@
+commit e7e1482087f58913b80a20b04d5c58d9d6d90155
+Author: Harry Mallon <hjmallon@gmail.com>
+Date:   Mon Mar 19 18:04:34 2018 +0000
+
+    Remove BUILD_TZ_STATIC and replace with BUILD_SHARED_LIBS
+    
+    * This is more standard CMake
+    * See https://cmake.org/cmake/help/v3.1/command/add_library.html
