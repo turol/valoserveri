@@ -1,4 +1,4 @@
-#include "DMXController.h"
+#include "valoserveri/DMXController.h"
 
 #include <cstdio>
 #include <cstdlib>
