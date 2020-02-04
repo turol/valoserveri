@@ -1,3 +1,4 @@
+#include "valoserveri/Config.h"
 #include "valoserveri/DMXController.h"
 
 #include <cstdio>
@@ -7,7 +8,11 @@
 
 int main(int argc, char *argv[]) {
 	// TODO: proper parsing of command line arguments
-	// TODO: read config file
+
+	// read config file
+	valoserveri::Config config("valoserveri.conf");
+	// TODO: do something with the config
+
 	DMXController dmx;
 
 	// bad but eh
