@@ -75,6 +75,7 @@ std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsign
 
 
 int main(int /* argc */, char * /* argv */ []) {
+	// TODO: catch all exceptions
 	// TODO: parse command line arguments
 
 	// read config file
@@ -109,6 +110,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	std::vector<char> buffer(buflen, 0);
 
 	// TODO: gracefully handle SIGINT
+	// TODO: re-exec on SIGHUP
 	while (true) {
 		struct sockaddr_in from;
 		memset(&from, 0, sizeof(from));
