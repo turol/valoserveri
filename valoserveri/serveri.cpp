@@ -83,7 +83,7 @@ int main(int /* argc */, char * /* argv */ []) {
 
 	DMXController dmx;
 
-	int port = 9909;
+	int port = config.get("global", "udpPort", 9909);
 
 	// socket
 	// TODO: IPv6
