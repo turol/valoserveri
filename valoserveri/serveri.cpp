@@ -119,11 +119,11 @@ int main(int /* argc */, char * /* argv */ []) {
 
 		// TODO: update lights
 		for (const auto &l : lights) {
-                    printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
-                    dmx.setLightColor(l.index, l.color);
-                }
+			printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
+			dmx.setLightColor(l.index, l.color);
+		}
 
-                dmx.update();
+		dmx.update();
 	}
 
 	close(fd);
