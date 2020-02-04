@@ -74,6 +74,9 @@ std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsign
 
 
 int main(int /* argc */, char * /* argv */ []) {
+	// TODO: parse command line arguments
+	// TODO: read config file
+
 	DMXController dmx;
 
 	int port = 9909;

@@ -6,6 +6,8 @@
 
 
 int main(int argc, char *argv[]) {
+	// TODO: proper parsing of command line arguments
+	// TODO: read config file
 	DMXController dmx;
 
 	// bad but eh
