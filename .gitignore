@@ -6,3 +6,5 @@ binaries/serveri-bin
 binaries/test-bin
 
 valoserveri.conf
+
+local.mk
