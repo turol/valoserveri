@@ -118,7 +118,7 @@ DMXController::~DMXController() {
 void DMXController::setLightColor(unsigned int index, const Color &color) {
 	// range check index
 	if (index >= 100) {
-		throw std::runtime_error(std::string("Bad light index" + index));
+		throw std::runtime_error("Bad light index" + std::to_string(index));
 	}
 
 	unsigned int offset = index * 5 + 4 + 2;
