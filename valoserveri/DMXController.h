@@ -11,7 +11,56 @@
 #include <termios.h>
 
 #include <stdexcept>
+#include <unordered_map>
 #include <vector>
+
+
+enum class LightType : uint8_t {
+	  RGB
+	, UV
+};
+
+
+struct Light {
+	LightType  type;
+	uint8_t    address;
+
+
+	Light()
+	: type(LightType::RGB)
+	, address(0)
+	{
+	}
+
+	~Light() {}
+
+	Light(const Light &) noexcept            = delete;
+	Light(Light &&) noexcept                 = delete;
+
+	Light &operator=(const Light &) noexcept = delete;
+	Light &operator=(Light &&) noexcept      = delete;
+};
+
+
+struct LightsConfig {
+	std::unordered_map<unsigned int, Light>  lights;
+
+
+	LightsConfig() {}
+
+	~LightsConfig() {}
+
+	LightsConfig(const LightsConfig &) noexcept            = delete;
+	LightsConfig(LightsConfig &&) noexcept                 = delete;
+
+	LightsConfig &operator=(const LightsConfig &) noexcept = delete;
+	LightsConfig &operator=(LightsConfig &&) noexcept      = delete;
+
+	// TODO: parse, dump
+
+	// TODO: validate()
+	//  check: channels are valid, don't overlap
+};
 
 
 struct Color {
