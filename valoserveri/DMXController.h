@@ -39,7 +39,7 @@ struct Color {
 
 class DMXController {
 	int                fd;
-	std::vector<char>  dmxPacket;
+	std::vector<uint8_t>  dmxPacket;
 
 public:
 
