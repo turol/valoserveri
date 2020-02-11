@@ -20,12 +20,12 @@ DMXController::DMXController(const Config & /* config */)
 	// TODO: allow configuring device name
 	// TODO: allow configuring number of lights
 	// open /dev/ttyUSB0
-	const char *ttyDeviceName = "/dev/ttyUSB0";
+	std::string ttyDeviceName = "/dev/ttyUSB0";
 	speed_t speed = B57600;
 
-	fd = open(ttyDeviceName, O_RDWR | O_NONBLOCK);
+	fd = open(ttyDeviceName.c_str(), O_RDWR | O_NONBLOCK);
 	// FIXME: fail gracefully if open fails
-	printf("open \"%s\": %d\n", ttyDeviceName, fd);
+	printf("open \"%s\": %d\n", ttyDeviceName.c_str(), fd);
 
 	// set baud rate 56000
 	{
