@@ -15,6 +15,9 @@
 #include <vector>
 
 
+namespace valoserveri {
+
+
 enum class LightType : uint8_t {
 	  RGB
 	, UV
@@ -107,6 +110,9 @@ public:
 
 	void update();
 };
+
+
+}  // namespace valoserveri
 
 
 #endif  // DMX_CONTROLLER_H

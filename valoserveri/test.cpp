@@ -6,6 +6,9 @@
 #include <ctime>
 
 
+using namespace valoserveri;
+
+
 int main(int argc, char *argv[]) {
 	// TODO: catch all exceptions
 	// TODO: proper parsing of command line arguments

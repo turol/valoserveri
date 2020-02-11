@@ -1,6 +1,9 @@
 #include "valoserveri/DMXController.h"
 
 
+namespace valoserveri {
+
+
 DMXController::DMXController()
 : fd(0)
 , dmxPacket(517, 0)
@@ -77,3 +80,6 @@ void DMXController::update() {
 	printf("write returned %d\n", retval);
 
 }
+
+
+}  // namespace valoserveri

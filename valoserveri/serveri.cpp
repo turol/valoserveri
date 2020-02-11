@@ -6,6 +6,9 @@
 #include <sys/socket.h>
 
 
+using namespace valoserveri;
+
+
 struct LightColor {
 	unsigned int  index;
 	Color         color;
