@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	valoserveri::Config config("valoserveri.conf");
 	// TODO: do something with the config
 
-	DMXController dmx;
+	DMXController dmx(config);
 
 	// bad but eh
 	srand(time(nullptr));

@@ -85,7 +85,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	valoserveri::Config config("valoserveri.conf");
 	// TODO: do something with the config
 
-	DMXController dmx;
+	DMXController dmx(config);
 
 	int port = config.get("global", "udpPort", 9909);
 

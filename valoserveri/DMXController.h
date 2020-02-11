@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "valoserveri/Config.h"
+
 
 namespace valoserveri {
 
@@ -95,7 +97,9 @@ class DMXController {
 
 public:
 
-	DMXController();
+	DMXController() = delete;
+
+	explicit DMXController(const Config &config);
 
 	DMXController(const DMXController &)            noexcept = delete;
 	DMXController(DMXController &&)                 noexcept = delete;

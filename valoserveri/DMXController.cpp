@@ -4,7 +4,7 @@
 namespace valoserveri {
 
 
-DMXController::DMXController()
+DMXController::DMXController(const Config & /* config */)
 : fd(0)
 , dmxPacket(517, 0)
 {
