@@ -4,7 +4,7 @@
 namespace valoserveri {
 
 
-DMXController::DMXController(const Config & /* config */)
+DMXController::DMXController(const Config &config)
 : fd(0)
 , dmxPacket(517, 0)
 {
@@ -20,7 +20,7 @@ DMXController::DMXController(const Config & /* config */)
 	// TODO: allow configuring device name
 	// TODO: allow configuring number of lights
 	// open /dev/ttyUSB0
-	std::string ttyDeviceName = "/dev/ttyUSB0";
+	std::string ttyDeviceName = config.get("global", "device", "/dev/ttyUSB0");
 	speed_t speed = B57600;
 
 	fd = open(ttyDeviceName.c_str(), O_RDWR | O_NONBLOCK);
