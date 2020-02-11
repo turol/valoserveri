@@ -4,6 +4,31 @@
 namespace valoserveri {
 
 
+LightsConfig LightsConfig::parse(const Config &config) {
+	unsigned int numLights = config.get("global", "lights", 0);
+
+	printf("num lights: %u\n", numLights);
+
+	// TODO: check count is not 0
+
+	LightsConfig l;
+
+	l.lights.reserve(numLights);
+
+	for (unsigned int i = 0; i < numLights; i++) {
+		std::string section = "light" + std::to_string(i);
+
+		unsigned int  address = config.get(section, "address", 0);
+		std::string   type    = config.get(section, "type",    "rgb");
+
+		// TODO: check address is not 0
+		printf("light \"%u\"  address \"%u\"  type \"%s\"\n", i, address, type.c_str());
+	}
+
+	return l;
+}
+
+
 DMXController::DMXController(const Config &config)
 : fd(0)
 , dmxPacket(517, 0)

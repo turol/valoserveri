@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
 
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
-	// TODO: do something with the config
+
+	LightsConfig lights = LightsConfig::parse(config);
 
 	DMXController dmx(config);
 

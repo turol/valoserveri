@@ -56,12 +56,16 @@ struct LightsConfig {
 	~LightsConfig() {}
 
 	LightsConfig(const LightsConfig &) noexcept            = delete;
-	LightsConfig(LightsConfig &&) noexcept                 = delete;
+	LightsConfig(LightsConfig &&) noexcept                 = default;
 
 	LightsConfig &operator=(const LightsConfig &) noexcept = delete;
-	LightsConfig &operator=(LightsConfig &&) noexcept      = delete;
+	LightsConfig &operator=(LightsConfig &&) noexcept      = default;
 
-	// TODO: parse, dump
+
+	static LightsConfig parse(const Config &config);
+
+	// TODO: implement
+	void debugDump() const;
 
 	// TODO: validate()
 	//  check: channels are valid, don't overlap
