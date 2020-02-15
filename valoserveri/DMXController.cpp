@@ -113,11 +113,18 @@ DMXController::~DMXController() {
 
 void DMXController::setLightColor(unsigned int index, const Color &color) {
 	// range check index
+	// TODO: remove this, it's redundant
 	if (index >= 100) {
 		throw std::runtime_error("Bad light index" + std::to_string(index));
 	}
 
-	unsigned int offset = index * 5 + 4 + 2;
+	auto it = lightConfig.lights.find(index);
+	if (it == lightConfig.lights.end()) {
+		printf("Bad light index %u\n", index);
+		return;
+	}
+
+	unsigned int offset = it->second.address + 4;
 	dmxPacket[offset + 0] = color.red;
 	dmxPacket[offset + 1] = color.green;
 	dmxPacket[offset + 2] = color.blue;
