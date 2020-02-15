@@ -96,7 +96,7 @@ struct Color {
 
 
 class DMXController {
-	int                fd;
+	int                   fd;
 	std::vector<uint8_t>  dmxPacket;
 	LightsConfig          lightConfig;
 
