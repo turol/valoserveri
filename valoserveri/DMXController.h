@@ -39,11 +39,11 @@ struct Light {
 
 	~Light() {}
 
-	Light(const Light &) noexcept            = delete;
-	Light(Light &&) noexcept                 = delete;
+	Light(const Light &) noexcept            = default;
+	Light(Light &&) noexcept                 = default;
 
-	Light &operator=(const Light &) noexcept = delete;
-	Light &operator=(Light &&) noexcept      = delete;
+	Light &operator=(const Light &) noexcept = default;
+	Light &operator=(Light &&) noexcept      = default;
 };
 
 
