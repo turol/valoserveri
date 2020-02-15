@@ -1,7 +1,25 @@
 #include "valoserveri/DMXController.h"
 
+#include <fmt/format.h>
+
 
 namespace valoserveri {
+
+
+static const std::array<const char *, 2> lightTypeStrings =
+{ "rgb", "uv" };
+
+
+LightType parseLightType(const std::string &str) {
+	// TODO: case insensitivity
+	for (unsigned int i = 0; i < lightTypeStrings.size(); i++) {
+		if (str == lightTypeStrings[i]) {
+			return static_cast<LightType>(i);
+		}
+	}
+
+	throw std::runtime_error(fmt::format("Bad light type \"{}\"", str));
+}
 
 
 LightsConfig LightsConfig::parse(const Config &config) {
@@ -16,13 +34,21 @@ LightsConfig LightsConfig::parse(const Config &config) {
 	l.lights.reserve(numLights);
 
 	for (unsigned int i = 0; i < numLights; i++) {
+		// TODO: catch exceptions per light
 		std::string section = "light" + std::to_string(i);
 
 		unsigned int  address = config.get(section, "address", 0);
 		std::string   type    = config.get(section, "type",    "rgb");
 
 		// TODO: check address is not 0
+		// TODO: range-check address ( < 256)
 		printf("light \"%u\"  address \"%u\"  type \"%s\"\n", i, address, type.c_str());
+
+		Light light;
+		light.type    = parseLightType(type);
+		light.address = address;
+
+		l.lights.emplace(i, std::move(light));
 	}
 
 	return l;
