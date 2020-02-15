@@ -68,9 +68,10 @@ DMXController::DMXController(const Config &config)
 	// terminator
 	dmxPacket[516] = 0xe7;
 
-	// TODO: allow configuring device name
-	// TODO: allow configuring number of lights
-	// open /dev/ttyUSB0
+	lightConfig = LightsConfig::parse(config);
+
+	// TODO: validate light config
+
 	std::string ttyDeviceName = config.get("global", "device", "/dev/ttyUSB0");
 	speed_t speed = B57600;
 

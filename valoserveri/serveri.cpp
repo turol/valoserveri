@@ -84,10 +84,6 @@ int main(int /* argc */, char * /* argv */ []) {
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
 
-	LightsConfig lightConfig = LightsConfig::parse(config);
-
-	// TODO: validate light config
-
 	DMXController dmx(config);
 
 	int port = config.get("global", "udpPort", 9909);
