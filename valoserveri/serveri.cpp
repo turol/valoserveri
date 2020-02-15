@@ -83,9 +83,10 @@ int main(int /* argc */, char * /* argv */ []) {
 
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
-	// TODO: do something with the config
 
 	LightsConfig lightConfig = LightsConfig::parse(config);
+
+	// TODO: validate light config
 
 	DMXController dmx(config);
 
@@ -101,6 +102,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	memset(&bindAddr, 0, sizeof(bindAddr));
 	bindAddr.sin_family = AF_INET;
 	bindAddr.sin_port = htons(port);
+	// TODO: get bind address from config
 	bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	int retval = bind(fd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
