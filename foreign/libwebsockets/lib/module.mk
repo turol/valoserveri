@@ -4,9 +4,12 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	date \
-	fmt \
-	libwebsockets \
+	core \
+	core-net \
+	event-libs \
+	misc \
+	plat \
+	roles \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -18,7 +21,7 @@ FILES:= \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_libwebsockets:=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)))
 
 
 d  := $(dirstack_$(sp))

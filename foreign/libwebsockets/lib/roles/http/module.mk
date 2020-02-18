@@ -4,9 +4,8 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	date \
-	fmt \
-	libwebsockets \
+	client \
+	server \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -15,10 +14,11 @@ $(eval $(foreach directory, $(DIRS), $(call directory-module,$(directory)) ))
 
 
 FILES:= \
+	header.c \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+SRC_$(d):=$(addprefix $(d)/,$(FILES)) $(foreach directory, $(DIRS), $(SRC_$(directory)))
 
 
 d  := $(dirstack_$(sp))

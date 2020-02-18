@@ -114,6 +114,13 @@ int main(int /* argc */, char * /* argv */ []) {
 	size_t buflen = 512;
 	std::vector<char> buffer(buflen, 0);
 
+	struct lws_context_creation_info info;
+	memset(&info, 0, sizeof(info));
+
+    info.port = config.get("global", "wsPort", 9910);
+
+	struct lws_context *context = lws_create_context(&info);
+
 	// TODO: gracefully handle SIGINT
 	// TODO: re-exec on SIGHUP
 	while (true) {
@@ -136,6 +143,8 @@ int main(int /* argc */, char * /* argv */ []) {
 
 		dmx.update();
 	}
+
+	lws_context_destroy(context);
 
 	close(fd);
 }

@@ -13,7 +13,7 @@ FILES:= \
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 
 
-serveri_MODULES:=date fmt
+serveri_MODULES:=date fmt libwebsockets
 serveri_SRC:=$(SRC_$(d)) $(dir)/serveri.cpp
 
 

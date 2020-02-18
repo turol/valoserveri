@@ -32,7 +32,8 @@ LDFLAGS:=-g
 #LDFLAGS+=-Wl,--gc-sections
 # you can enable this if you're using gold linker
 #LFDLAGS+=-Wl,--icf=all
-LDLIBS:=-lpthread
+LDLIBS:=-lpthread 
+LDLIBS_libwebsockets:=-lz
 
 LTOCFLAGS:=-flto -fuse-linker-plugin -fno-fat-lto-objects
 LTOLDFLAGS:=-flto -fuse-linker-plugin

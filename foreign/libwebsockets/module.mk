@@ -4,9 +4,7 @@ d              := $(dir)
 
 
 SUBDIRS:= \
-	date \
-	fmt \
-	libwebsockets \
+	lib \
 	# empty line
 
 DIRS:=$(addprefix $(d)/,$(SUBDIRS))
@@ -18,7 +16,7 @@ FILES:= \
 	# empty line
 
 
-SRC_$(d):=$(addprefix $(d)/,$(FILES))
+DEPENDS_libwebsockets:=libz
 
 
 d  := $(dirstack_$(sp))
