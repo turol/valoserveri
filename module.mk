@@ -58,6 +58,7 @@ CFLAGS+=-I$(TOPDIR)
 CFLAGS+=-isystem$(TOPDIR)/foreign
 CFLAGS+=-isystem$(TOPDIR)/foreign/date/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/fmt/include
+CFLAGS+=-isystem$(TOPDIR)/foreign/libwebsockets/include
 
 
 # (call directory-module, dirname)

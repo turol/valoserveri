@@ -5,6 +5,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <libwebsockets.h>
+
 
 using namespace valoserveri;
 
