@@ -114,12 +114,14 @@ int main(int /* argc */, char * /* argv */ []) {
 	size_t buflen = 512;
 	std::vector<char> buffer(buflen, 0);
 
+#ifdef USE_LIBWEBSOCKETS
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof(info));
 
     info.port = config.get("global", "wsPort", 9910);
 
 	struct lws_context *context = lws_create_context(&info);
+#endif  // USE_LIBWEBSOCKETS
 
 	// TODO: gracefully handle SIGINT
 	// TODO: re-exec on SIGHUP
@@ -144,7 +146,11 @@ int main(int /* argc */, char * /* argv */ []) {
 		dmx.update();
 	}
 
+#ifdef USE_LIBWEBSOCKETS
+
 	lws_context_destroy(context);
+
+#endif  // USE_LIBWEBSOCKETS
 
 	close(fd);
 }

@@ -12,6 +12,9 @@ TSAN:=n
 UBSAN:=n
 
 
+USE_LIBWEBSOCKETS:=y
+
+
 # compiler options etc
 CXX:=g++
 CC:=gcc

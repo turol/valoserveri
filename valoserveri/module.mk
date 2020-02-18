@@ -13,9 +13,17 @@ FILES:= \
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 
 
-serveri_MODULES:=date fmt libwebsockets
+serveri_MODULES:=date fmt
 serveri_SRC:=$(SRC_$(d)) $(dir)/serveri.cpp
 
+
+ifeq ($(USE_LIBWEBSOCKETS),y)
+
+serveri_MODULES+=libwebsockets
+
+CFLAGS+=-DUSE_LIBWEBSOCKETS
+
+endif  # USE_LIBWEBSOCKETS
 
 test_MODULES:=date fmt
 test_SRC:=$(SRC_$(d)) $(dir)/test.cpp
