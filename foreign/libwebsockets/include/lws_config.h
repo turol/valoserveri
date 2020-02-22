@@ -100,7 +100,7 @@
 /* #undef LWS_WITH_DEPRECATED_LWS_DLL */
 #define LWS_WITH_DIR
 /* #undef LWS_WITH_ESP32 */
-/* #undef LWS_WITH_EXTERNAL_POLL */
+#define LWS_WITH_EXTERNAL_POLL
 /* #undef LWS_WITH_FTS */
 /* #undef LWS_WITH_GENCRYPTO */
 /* #undef LWS_WITH_GENERIC_SESSIONS */
