@@ -185,22 +185,33 @@ public:
 
 	Serveri() = delete;
 
-	Serveri(const Config & /* config */)
-	: UDPfd(0)
-#ifdef USE_LIBWEBSOCKETS
-	, ws_context(nullptr)
-#endif  // USE_LIBWEBSOCKETS
-	{
-	}
+	Serveri(const Config & /* config */);
 
-	~Serveri() {}
+	~Serveri();
 
 	Serveri(const Serveri &) noexcept            = delete;
 	Serveri(Serveri &&) noexcept                 = default;
 
 	Serveri &operator=(const Serveri &) noexcept = delete;
 	Serveri &operator=(Serveri &&) noexcept      = default;
+
+	// TODO: signalQuit
+
+	void run();
 };
+
+
+Serveri::Serveri(const Config & /* config */)
+: UDPfd(0)
+#ifdef USE_LIBWEBSOCKETS
+, ws_context(nullptr)
+#endif  // USE_LIBWEBSOCKETS
+{
+}
+
+
+Serveri::~Serveri() {
+}
 
 
 int main(int /* argc */, char * /* argv */ []) {
