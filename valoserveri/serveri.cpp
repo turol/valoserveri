@@ -172,7 +172,14 @@ class Serveri {
 
 public:
 
-	Serveri() {}
+	// TODO: private
+
+	int UDPfd;
+
+	Serveri()
+	: UDPfd(0)
+	{
+	}
 
 	~Serveri() {}
 
@@ -191,14 +198,16 @@ int main(int /* argc */, char * /* argv */ []) {
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
 
+	Serveri serveri;
+
 	DMXController dmx(config);
 
 	int port = config.get("global", "udpPort", 9909);
 
 	// socket
 	// TODO: IPv6
-	int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	printf("fd: %d\n", fd);
+	serveri.UDPfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	printf("fd: %d\n", serveri.UDPfd);
 
 	// bind
 	struct sockaddr_in bindAddr;
@@ -209,10 +218,10 @@ int main(int /* argc */, char * /* argv */ []) {
 	bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	{
-		int retval = bind(fd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
+		int retval = bind(serveri.UDPfd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
 		if (retval != 0) {
 			printf("bind error: %d \"%s\"\n", errno, strerror(errno));
-			close(fd);
+			close(serveri.UDPfd);
 			return 1;
 		}
 	}
@@ -256,7 +265,7 @@ int main(int /* argc */, char * /* argv */ []) {
 		socklen_t fromLength = sizeof(from);
 
 		// TODO: need to poll both this and libwebsockets
-		ssize_t len = recvfrom(fd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
+		ssize_t len = recvfrom(serveri.UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 		printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
 		// parse packet
@@ -278,5 +287,5 @@ int main(int /* argc */, char * /* argv */ []) {
 
 #endif  // USE_LIBWEBSOCKETS
 
-	close(fd);
+	close(serveri.UDPfd);
 }
