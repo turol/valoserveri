@@ -297,29 +297,28 @@ void Serveri::run() {
 				if (fd.fd == UDPfd) {
 					// it's our udp fd
 
-		struct sockaddr_in from;
-		memset(&from, 0, sizeof(from));
-		socklen_t fromLength = sizeof(from);
+					struct sockaddr_in from;
+					memset(&from, 0, sizeof(from));
+					socklen_t fromLength = sizeof(from);
 
-		ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
-		printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
+					ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
+					printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
-		// parse packet
-		auto lights = parseLightPacket(buffer, len);
-		printf("lights: %u\n", (unsigned int) lights.size());
+					// parse packet
+					auto lights = parseLightPacket(buffer, len);
+					printf("lights: %u\n", (unsigned int) lights.size());
 
-		// TODO: update lights
-		for (const auto &l : lights) {
-			printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
-			dmx.setLightColor(l.index, l.color);
-		}
-
+					// TODO: update lights
+					for (const auto &l : lights) {
+						printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
+						dmx.setLightColor(l.index, l.color);
+					}
 				} else {
 #ifdef USE_LIBWEBSOCKETS
 
-		// TODO: do something with retval
-		int retval = lws_service(ws_context, 1);
-		printf("lws_service: %d\n", retval);
+					// TODO: do something with retval
+					int retval = lws_service(ws_context, 1);
+					printf("lws_service: %d\n", retval);
 
 #endif  // USE_LIBWEBSOCKETS
 				}
