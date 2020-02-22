@@ -316,7 +316,7 @@ void Serveri::run() {
 		int pollresult = poll(pollfds.data(), pollfds.size(), -1);
 		printf("pollresult: %d\n", pollresult);
 
-		unsigned int count = 0;
+		int count = 0;
 		for (pollfd &fd : pollfds) {
 			if (count >= pollresult) {
 				// everything has been processed, early out
@@ -343,14 +343,16 @@ void Serveri::run() {
 						printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
 						dmx.setLightColor(l.index, l.color);
 					}
-				} else {
+
 #ifdef USE_LIBWEBSOCKETS
 
-					// TODO: do something with retval
-					int retval = lws_service(ws_context, 1);
-					printf("lws_service: %d\n", retval);
+				} else {
+
+					int retval = lws_service_fd(ws_context, &fd);
+					printf("lws_service_fd: %d\n", retval);
 
 #endif  // USE_LIBWEBSOCKETS
+
 				}
 
 				fd.revents = 0;
@@ -358,6 +360,10 @@ void Serveri::run() {
 
 			count++;
 		}
+
+		// TODO: hax, remove after poll works
+		int retval = lws_service(ws_context, 1);
+		printf("lws_service: %d\n", retval);
 
 		dmx.update();
 	}
