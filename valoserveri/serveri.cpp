@@ -145,7 +145,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 }
 
 
-
+// TODO: monitor protocol
 static const struct lws_protocols protocols[] = {
 	{ .name                  = "default"
 	, .callback              = callback
@@ -166,6 +166,8 @@ static const struct lws_protocols protocols[] = {
 class Serveri {
 	int                 UDPfd;
 
+	// TODO: quit signaled, quit pipe
+
 	DMXController       dmx;
 
 	size_t              buflen;
@@ -176,8 +178,7 @@ class Serveri {
 
 #endif  // USE_LIBWEBSOCKETS
 
-	// TODO:
-	//  poll array
+	std::vector<pollfd>  pollfds;
 
 
 public:
@@ -234,6 +235,15 @@ Serveri::Serveri(const Config &config)
 		}
 	}
 
+	{
+		pollfd p;
+		memset(&p, 0, sizeof(p));
+		p.fd      = UDPfd;
+		p.events  = POLLIN | POLLERR;
+
+		pollfds.push_back(p);
+	}
+
 	// TODO: make buffer length configurable
 
 #ifdef USE_LIBWEBSOCKETS
@@ -273,19 +283,24 @@ void Serveri::run() {
 	std::vector<char> buffer(buflen, 0);
 
 	while (true) {
+		int pollresult = poll(pollfds.data(), pollfds.size(), -1);
+		printf("pollresult: %d\n", pollresult);
 
-#ifdef USE_LIBWEBSOCKETS
+		unsigned int count = 0;
+		for (pollfd &fd : pollfds) {
+			if (count >= pollresult) {
+				// everything has been processed, early out
+				break;
+			}
 
-		// TODO: do something with retval
-		int retval = lws_service(ws_context, 1);
-
-#endif  // USE_LIBWEBSOCKETS
+			if (fd.revents != 0) {
+				if (fd.fd == UDPfd) {
+					// it's our udp fd
 
 		struct sockaddr_in from;
 		memset(&from, 0, sizeof(from));
 		socklen_t fromLength = sizeof(from);
 
-		// TODO: need to poll both this and libwebsockets
 		ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 		printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
@@ -297,6 +312,22 @@ void Serveri::run() {
 		for (const auto &l : lights) {
 			printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
 			dmx.setLightColor(l.index, l.color);
+		}
+
+				} else {
+#ifdef USE_LIBWEBSOCKETS
+
+		// TODO: do something with retval
+		int retval = lws_service(ws_context, 1);
+		printf("lws_service: %d\n", retval);
+
+#endif  // USE_LIBWEBSOCKETS
+				}
+
+				fd.revents = 0;
+			}
+
+			count++;
 		}
 
 		dmx.update();
