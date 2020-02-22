@@ -92,6 +92,8 @@ public:
 
 	void setFDEvents(int fd, int events);
 
+	void lightPacket(const std::vector<char> &packet, unsigned int len);
+
 	void run();
 };
 
@@ -370,6 +372,19 @@ void Serveri::setFDEvents(int fd, int events) {
 }
 
 
+void Serveri::lightPacket(const std::vector<char> &buffer, unsigned int len) {
+	// parse packet
+	auto lights = parseLightPacket(buffer, len);
+	printf("lights: %u\n", (unsigned int) lights.size());
+
+	// TODO: update lights
+	for (const auto &l : lights) {
+		printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
+		dmx.setLightColor(l.index, l.color);
+	}
+}
+
+
 void Serveri::run() {
 	std::vector<char> buffer(buflen, 0);
 
@@ -395,15 +410,7 @@ void Serveri::run() {
 					ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 					printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
-					// parse packet
-					auto lights = parseLightPacket(buffer, len);
-					printf("lights: %u\n", (unsigned int) lights.size());
-
-					// TODO: update lights
-					for (const auto &l : lights) {
-						printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
-						dmx.setLightColor(l.index, l.color);
-					}
+					lightPacket(buffer, len);
 
 					fd.revents = 0;
 
