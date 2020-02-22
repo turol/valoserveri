@@ -49,6 +49,47 @@ struct per_vhost_data__minimal {
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
 
 
+class Serveri {
+	int                 UDPfd;
+
+	// TODO: quit signaled, quit pipe
+
+	DMXController       dmx;
+
+	size_t              buflen;
+
+#ifdef USE_LIBWEBSOCKETS
+
+	struct lws_context  *ws_context;
+
+	// TODO: does this need to live indefinetely?
+	std::vector<lws_protocols>  protocols;
+
+#endif  // USE_LIBWEBSOCKETS
+
+	std::vector<pollfd>  pollfds;
+
+
+public:
+
+	Serveri() = delete;
+
+	Serveri(const Config & /* config */);
+
+	~Serveri();
+
+	Serveri(const Serveri &) noexcept            = delete;
+	Serveri(Serveri &&) noexcept                 = delete;
+
+	Serveri &operator=(const Serveri &) noexcept = delete;
+	Serveri &operator=(Serveri &&) noexcept      = delete;
+
+	// TODO: signalQuit
+
+	void run();
+};
+
+
 /* destroys the message when everyone has had a copy of it */
 
 static void
@@ -179,47 +220,6 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 
 
 #endif  // USE_LIBWEBSOCKETS
-
-
-class Serveri {
-	int                 UDPfd;
-
-	// TODO: quit signaled, quit pipe
-
-	DMXController       dmx;
-
-	size_t              buflen;
-
-#ifdef USE_LIBWEBSOCKETS
-
-	struct lws_context  *ws_context;
-
-	// TODO: does this need to live indefinetely?
-	std::vector<lws_protocols>  protocols;
-
-#endif  // USE_LIBWEBSOCKETS
-
-	std::vector<pollfd>  pollfds;
-
-
-public:
-
-	Serveri() = delete;
-
-	Serveri(const Config & /* config */);
-
-	~Serveri();
-
-	Serveri(const Serveri &) noexcept            = delete;
-	Serveri(Serveri &&) noexcept                 = delete;
-
-	Serveri &operator=(const Serveri &) noexcept = delete;
-	Serveri &operator=(Serveri &&) noexcept      = delete;
-
-	// TODO: signalQuit
-
-	void run();
-};
 
 
 Serveri::Serveri(const Config &config)
