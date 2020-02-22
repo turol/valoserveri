@@ -378,9 +378,13 @@ void Serveri::run() {
 			count++;
 		}
 
+#ifdef USE_LIBWEBSOCKETS
+
 		// TODO: hax, remove after poll works
 		int retval = lws_service(ws_context, 1);
 		printf("lws_service: %d\n", retval);
+
+#endif  // USE_LIBWEBSOCKETS
 
 		dmx.update();
 	}
