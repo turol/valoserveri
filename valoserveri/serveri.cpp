@@ -175,21 +175,6 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 }
 
 
-// TODO: monitor protocol
-static const struct lws_protocols protocols[] = {
-	{ .name                  = "default"
-	, .callback              = callback
-	, .per_session_data_size = sizeof(struct per_session_data__minimal)
-	, .rx_buffer_size        = 128
-	, .id                    = 1
-	, .user                  = nullptr
-	, .tx_packet_size        = 0
-	}
-	, { "http", lws_callback_http_dummy, 0, 0, 0, nullptr, 0 }
-	, { nullptr, nullptr, 0, 0, 0, nullptr, 0 } /* terminator */
-};
-
-
 #endif  // USE_LIBWEBSOCKETS
 
 
@@ -205,6 +190,9 @@ class Serveri {
 #ifdef USE_LIBWEBSOCKETS
 
 	struct lws_context  *ws_context;
+
+	// TODO: does this need to live indefinetely?
+	std::vector<lws_protocols>  protocols;
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -278,12 +266,38 @@ Serveri::Serveri(const Config &config)
 
 #ifdef USE_LIBWEBSOCKETS
 
+	{
+		protocols.reserve(3);
+
+		lws_protocols light = {
+			  .name                  = "default"
+			, .callback              = callback
+			, .per_session_data_size = sizeof(struct per_session_data__minimal)
+			, .rx_buffer_size        = 128
+			, .id                    = 1
+			, .user                  = nullptr
+			, .tx_packet_size        = 0
+
+		};
+		protocols.push_back(light);
+
+		// TODO: monitor protocol
+
+		// TODO: do we need this?
+		lws_protocols http = { "http", lws_callback_http_dummy, 0, 0, 0, nullptr, 0 };
+		protocols.push_back(http);
+
+		/* terminator */
+		lws_protocols terminator = { nullptr, nullptr, 0, 0, 0, nullptr, 0 };
+		protocols.push_back(terminator);
+	}
+
 	struct lws_context_creation_info info;
 	memset(&info, 0, sizeof(info));
 
 	info.port                  = config.get("global", "wsPort", 9910);
 	// info.mounts                = &mount;
-	info.protocols             = protocols;
+	info.protocols             = protocols.data();
 
 	// TODO: configure these
 	info.vhost_name            = "127.0.0.1";
