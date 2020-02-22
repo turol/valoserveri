@@ -176,8 +176,18 @@ public:
 
 	int UDPfd;
 
+#ifdef USE_LIBWEBSOCKETS
+
+	struct lws_context *ws_context;
+
+#endif  // USE_LIBWEBSOCKETS
+
+
 	Serveri()
 	: UDPfd(0)
+#ifdef USE_LIBWEBSOCKETS
+	, ws_context(nullptr)
+#endif  // USE_LIBWEBSOCKETS
 	{
 	}
 
@@ -245,7 +255,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	info.ws_ping_pong_interval = 10;
 	// info.options               = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
 
-	struct lws_context *context = lws_create_context(&info);
+	serveri.ws_context = lws_create_context(&info);
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -256,7 +266,7 @@ int main(int /* argc */, char * /* argv */ []) {
 #ifdef USE_LIBWEBSOCKETS
 
 		// TODO: do something with retval
-		int retval = lws_service(context, 1);
+		int retval = lws_service(serveri.ws_context, 1);
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -283,7 +293,7 @@ int main(int /* argc */, char * /* argv */ []) {
 
 #ifdef USE_LIBWEBSOCKETS
 
-	lws_context_destroy(context);
+	lws_context_destroy(serveri.ws_context);
 
 #endif  // USE_LIBWEBSOCKETS
 
