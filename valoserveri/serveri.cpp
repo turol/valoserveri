@@ -46,6 +46,9 @@ struct per_vhost_data__minimal {
 };
 
 
+static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
+
+
 /* destroys the message when everyone has had a copy of it */
 
 static void
