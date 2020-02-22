@@ -168,30 +168,13 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 		pss->last = vhd->current;
 		break;
 
-	case LWS_CALLBACK_RECEIVE:
-		if (vhd->amsg.payload)
-			__minimal_destroy_message(&vhd->amsg);
+	case LWS_CALLBACK_RECEIVE: {
+		// TODO: use std::span
+		std::vector<char> packet(len, 0);
+		memcpy(packet.data(), in, len);
 
-		vhd->amsg.len = len;
-		/* notice we over-allocate by LWS_PRE */
-		vhd->amsg.payload = malloc(LWS_PRE + len);
-		if (!vhd->amsg.payload) {
-			lwsl_user("OOM: dropping\n");
-			break;
-		}
-
-		memcpy((char *)vhd->amsg.payload + LWS_PRE, in, len);
-		vhd->current++;
-
-		/*
-		 * let everybody know we want to write something on them
-		 * as soon as they are ready
-		 */
-		lws_start_foreach_llp(struct per_session_data__minimal **,
-				      ppss, vhd->pss_list) {
-			lws_callback_on_writable((*ppss)->wsi);
-		} lws_end_foreach_llp(ppss, pss_list);
-		break;
+		globalServeri->lightPacket(packet, len);
+	} break;
 
 	case LWS_CALLBACK_ADD_POLL_FD: {
 		auto pa = reinterpret_cast<lws_pollargs *>(in);
