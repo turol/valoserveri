@@ -164,16 +164,6 @@ static const struct lws_protocols protocols[] = {
 
 
 class Serveri {
-	// TODO:
-	//  user fd
-	//  libwebsockets context
-	//  poll array
-
-
-public:
-
-	// TODO: private
-
 	int                 UDPfd;
 
 	DMXController       dmx;
@@ -186,6 +176,11 @@ public:
 
 #endif  // USE_LIBWEBSOCKETS
 
+	// TODO:
+	//  poll array
+
+
+public:
 
 	Serveri() = delete;
 
