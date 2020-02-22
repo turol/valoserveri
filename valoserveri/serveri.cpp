@@ -174,11 +174,15 @@ public:
 
 	// TODO: private
 
-	int UDPfd;
+	int                 UDPfd;
+
+	DMXController       dmx;
+
+	size_t              buflen;
 
 #ifdef USE_LIBWEBSOCKETS
 
-	struct lws_context *ws_context;
+	struct lws_context  *ws_context;
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -190,10 +194,10 @@ public:
 	~Serveri();
 
 	Serveri(const Serveri &) noexcept            = delete;
-	Serveri(Serveri &&) noexcept                 = default;
+	Serveri(Serveri &&) noexcept                 = delete;
 
 	Serveri &operator=(const Serveri &) noexcept = delete;
-	Serveri &operator=(Serveri &&) noexcept      = default;
+	Serveri &operator=(Serveri &&) noexcept      = delete;
 
 	// TODO: signalQuit
 
@@ -201,36 +205,20 @@ public:
 };
 
 
-Serveri::Serveri(const Config & /* config */)
+Serveri::Serveri(const Config &config)
 : UDPfd(0)
+, dmx(config)
+, buflen(512)
 #ifdef USE_LIBWEBSOCKETS
 , ws_context(nullptr)
 #endif  // USE_LIBWEBSOCKETS
 {
-}
-
-
-Serveri::~Serveri() {
-}
-
-
-int main(int /* argc */, char * /* argv */ []) {
-	// TODO: catch all exceptions
-	// TODO: parse command line arguments
-
-	// read config file
-	valoserveri::Config config("valoserveri.conf");
-
-	Serveri serveri(config);
-
-	DMXController dmx(config);
-
 	int port = config.get("global", "udpPort", 9909);
 
 	// socket
 	// TODO: IPv6
-	serveri.UDPfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	printf("fd: %d\n", serveri.UDPfd);
+	UDPfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	printf("fd: %d\n", UDPfd);
 
 	// bind
 	struct sockaddr_in bindAddr;
@@ -241,18 +229,17 @@ int main(int /* argc */, char * /* argv */ []) {
 	bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	{
-		int retval = bind(serveri.UDPfd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
+		int retval = bind(UDPfd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
 		if (retval != 0) {
 			printf("bind error: %d \"%s\"\n", errno, strerror(errno));
-			close(serveri.UDPfd);
-			return 1;
+			close(UDPfd);
+			UDPfd = 0;
+			// TODO: better exception
+			throw std::runtime_error("bind error");
 		}
 	}
 
-	// recvfrom
 	// TODO: make buffer length configurable
-	size_t buflen = 512;
-	std::vector<char> buffer(buflen, 0);
 
 #ifdef USE_LIBWEBSOCKETS
 
@@ -268,18 +255,34 @@ int main(int /* argc */, char * /* argv */ []) {
 	info.ws_ping_pong_interval = 10;
 	// info.options               = LWS_SERVER_OPTION_HTTP_HEADERS_SECURITY_BEST_PRACTICES_ENFORCE;
 
-	serveri.ws_context = lws_create_context(&info);
+	ws_context = lws_create_context(&info);
+
+#endif  // USE_LIBWEBSOCKETS
+}
+
+
+Serveri::~Serveri() {
+#ifdef USE_LIBWEBSOCKETS
+
+	lws_context_destroy(ws_context);
+	ws_context = nullptr;
 
 #endif  // USE_LIBWEBSOCKETS
 
-	// TODO: gracefully handle SIGINT
-	// TODO: re-exec on SIGHUP
+	close(UDPfd);
+	UDPfd = 0;
+}
+
+
+void Serveri::run() {
+	std::vector<char> buffer(buflen, 0);
+
 	while (true) {
 
 #ifdef USE_LIBWEBSOCKETS
 
 		// TODO: do something with retval
-		int retval = lws_service(serveri.ws_context, 1);
+		int retval = lws_service(ws_context, 1);
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -288,7 +291,7 @@ int main(int /* argc */, char * /* argv */ []) {
 		socklen_t fromLength = sizeof(from);
 
 		// TODO: need to poll both this and libwebsockets
-		ssize_t len = recvfrom(serveri.UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
+		ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 		printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
 		// parse packet
@@ -303,12 +306,19 @@ int main(int /* argc */, char * /* argv */ []) {
 
 		dmx.update();
 	}
+}
 
-#ifdef USE_LIBWEBSOCKETS
 
-	lws_context_destroy(serveri.ws_context);
+int main(int /* argc */, char * /* argv */ []) {
+	// TODO: catch all exceptions
+	// TODO: parse command line arguments
 
-#endif  // USE_LIBWEBSOCKETS
+	// read config file
+	valoserveri::Config config("valoserveri.conf");
 
-	close(serveri.UDPfd);
+	Serveri serveri(config);
+
+	// TODO: gracefully handle SIGINT
+	// TODO: re-exec on SIGHUP
+	serveri.run();
 }
