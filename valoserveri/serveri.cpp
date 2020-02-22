@@ -163,6 +163,27 @@ static const struct lws_protocols protocols[] = {
 #endif  // USE_LIBWEBSOCKETS
 
 
+class Serveri {
+	// TODO:
+	//  user fd
+	//  libwebsockets context
+	//  poll array
+
+
+public:
+
+	Serveri() {}
+
+	~Serveri() {}
+
+	Serveri(const Serveri &) noexcept            = delete;
+	Serveri(Serveri &&) noexcept                 = default;
+
+	Serveri &operator=(const Serveri &) noexcept = delete;
+	Serveri &operator=(Serveri &&) noexcept      = default;
+};
+
+
 int main(int /* argc */, char * /* argv */ []) {
 	// TODO: catch all exceptions
 	// TODO: parse command line arguments
