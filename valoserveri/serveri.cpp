@@ -86,8 +86,18 @@ public:
 
 	// TODO: signalQuit
 
+	void addFD(int fd, int events);
+
+	void deleteFD(int fd);
+
+	void setFDEvents(int fd, int events);
+
 	void run();
 };
+
+
+// TODO: hax, remove
+static Serveri *globalServeri = nullptr;
 
 
 /* destroys the message when everyone has had a copy of it */
@@ -181,35 +191,20 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 		} lws_end_foreach_llp(ppss, pss_list);
 		break;
 
-#if 0
-	case LWS_CALLBACK_ADD_POLL_FD:
-		pollfds[count_pollfds].fd = (int)(long)user;
-		pollfds[count_pollfds].events = (int)len;
-		pollfds[count_pollfds++].revents = 0;
-		break;
+	case LWS_CALLBACK_ADD_POLL_FD: {
+		auto pa = reinterpret_cast<lws_pollargs *>(in);
+		globalServeri->addFD(pa->fd, pa->events);
+	} break;
 
-	case LWS_CALLBACK_DEL_POLL_FD:
-		for (n = 0; n < count_pollfds; n++)
-			if (pollfds[n].fd == (int)(long)user)
-				while (n < count_pollfds) {
-					pollfds[n] = pollfds[n + 1];
-					n++;
-				}
-		count_pollfds--;
-		break;
+	case LWS_CALLBACK_DEL_POLL_FD: {
+		auto pa = reinterpret_cast<lws_pollargs *>(in);
+		globalServeri->deleteFD(pa->fd);
+	} break;
 
-	case LWS_CALLBACK_SET_MODE_POLL_FD:
-		for (n = 0; n < count_pollfds; n++)
-			if (pollfds[n].fd == (int)(long)user)
-				pollfds[n].events |= (int)(long)len;
-		break;
-
-	case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
-		for (n = 0; n < count_pollfds; n++)
-			if (pollfds[n].fd == (int)(long)user)
-				pollfds[n].events &= ~(int)(long)len;
-		break;
-#endif
+	case LWS_CALLBACK_CHANGE_MODE_POLL_FD: {
+		auto pa = reinterpret_cast<lws_pollargs *>(in);
+		globalServeri->setFDEvents(pa->fd, pa->events);
+	} break;
 
 	default:
 		break;
@@ -230,6 +225,8 @@ Serveri::Serveri(const Config &config)
 , ws_context(nullptr)
 #endif  // USE_LIBWEBSOCKETS
 {
+	globalServeri = this;
+
 	int port = config.get("global", "udpPort", 9909);
 
 	// socket
@@ -328,6 +325,48 @@ Serveri::~Serveri() {
 
 	close(UDPfd);
 	UDPfd = 0;
+
+	globalServeri = nullptr;
+}
+
+
+void Serveri::addFD(int fd, int events) {
+	printf("addFD %d %d\n", fd, events);
+
+	pollfd p;
+	memset(&p, 0, sizeof(p));
+	p.fd      = fd;
+	p.events  = events;
+
+	pollfds.push_back(p);
+}
+
+
+void Serveri::deleteFD(int fd) {
+	printf("deleteFD %d\n", fd);
+
+	auto it = pollfds.begin();
+	while (it != pollfds.end()) {
+		if (it->fd == fd) {
+			it = pollfds.erase(it);
+		} else {
+			it++;
+		}
+	}
+}
+
+
+void Serveri::setFDEvents(int fd, int events) {
+	printf("setModeFD %d %d\n", fd, events);
+
+	auto it = pollfds.begin();
+	while (it != pollfds.end()) {
+		if (it->fd == fd) {
+			it->events = events;
+		}
+
+		it++;
+	}
 }
 
 
