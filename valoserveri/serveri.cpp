@@ -183,7 +183,9 @@ public:
 #endif  // USE_LIBWEBSOCKETS
 
 
-	Serveri()
+	Serveri() = delete;
+
+	Serveri(const Config & /* config */)
 	: UDPfd(0)
 #ifdef USE_LIBWEBSOCKETS
 	, ws_context(nullptr)
@@ -208,7 +210,7 @@ int main(int /* argc */, char * /* argv */ []) {
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
 
-	Serveri serveri;
+	Serveri serveri(config);
 
 	DMXController dmx(config);
 
