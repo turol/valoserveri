@@ -405,6 +405,8 @@ void Serveri::run() {
 						dmx.setLightColor(l.index, l.color);
 					}
 
+					fd.revents = 0;
+
 #ifdef USE_LIBWEBSOCKETS
 
 				} else {
@@ -415,8 +417,6 @@ void Serveri::run() {
 #endif  // USE_LIBWEBSOCKETS
 
 				}
-
-				fd.revents = 0;
 			}
 
 			count++;
@@ -425,7 +425,7 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 		// TODO: hax, remove after poll works
-		int retval = lws_service(ws_context, 1);
+		int retval = lws_service(ws_context, 0);
 		printf("lws_service: %d\n", retval);
 
 #endif  // USE_LIBWEBSOCKETS
