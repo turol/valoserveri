@@ -309,6 +309,11 @@ Serveri::Serveri(const Config &config)
 
 	ws_context = lws_create_context(&info);
 
+	// call service once so protocols get registered
+	// TODO: why is this needed? shouldn't be
+	int retval = lws_service(ws_context, 0);
+	printf("lws_service: %d\n", retval);
+
 #endif  // USE_LIBWEBSOCKETS
 }
 
