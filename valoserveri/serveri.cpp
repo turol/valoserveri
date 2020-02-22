@@ -187,11 +187,13 @@ int main(int /* argc */, char * /* argv */ []) {
 	// TODO: get bind address from config
 	bindAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	{
 	int retval = bind(fd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
 	if (retval != 0) {
 		printf("bind error: %d \"%s\"\n", errno, strerror(errno));
 		close(fd);
 		return 1;
+	}
 	}
 
 	// recvfrom
@@ -223,7 +225,8 @@ int main(int /* argc */, char * /* argv */ []) {
 
 #ifdef USE_LIBWEBSOCKETS
 
-		retval = lws_service(context, 1);
+		// TODO: do something with retval
+		int retval = lws_service(context, 1);
 
 #endif  // USE_LIBWEBSOCKETS
 
