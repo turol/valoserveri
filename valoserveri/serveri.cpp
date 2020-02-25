@@ -392,13 +392,6 @@ void Serveri::run() {
 			}
 		}
 
-#ifdef USE_LIBWEBSOCKETS
-
-		// TODO: hax, remove after poll works
-		lws_service(ws_context, 0);
-
-#endif  // USE_LIBWEBSOCKETS
-
 		dmx.update();
 	}
 }
