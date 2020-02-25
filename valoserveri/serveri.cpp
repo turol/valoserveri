@@ -102,19 +102,6 @@ struct per_vhost_data__minimal {
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
 
 
-/* destroys the message when everyone has had a copy of it */
-
-static void
-__minimal_destroy_message(void *_msg)
-{
-	struct msg *msg = reinterpret_cast<struct msg *>(_msg);
-
-	free(msg->payload);
-	msg->payload = NULL;
-	msg->len = 0;
-}
-
-
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
 
 	printf("callback reason: %d\n", reason);
