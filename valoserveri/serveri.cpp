@@ -55,7 +55,7 @@ public:
 
 	void setFDEvents(int fd, int events);
 
-	void lightPacket(const std::vector<char> &packet, unsigned int len);
+	void lightPacket(const nonstd::span<const char> &packet);
 
 	void run();
 };
@@ -154,11 +154,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 		break;
 
 	case LWS_CALLBACK_RECEIVE: {
-		// TODO: use std::span
-		std::vector<char> packet(len, 0);
-		memcpy(packet.data(), in, len);
-
-		globalServeri->lightPacket(packet, len);
+		globalServeri->lightPacket(nonstd::make_span(reinterpret_cast<const char *>(in), len));
 	} break;
 
 	case LWS_CALLBACK_ADD_POLL_FD: {
@@ -340,9 +336,9 @@ void Serveri::setFDEvents(int fd, int events) {
 }
 
 
-void Serveri::lightPacket(const std::vector<char> &buffer, unsigned int len) {
+void Serveri::lightPacket(const nonstd::span<const char> &packet) {
 	// parse packet
-	auto lights = parseLightPacket(nonstd::make_span(buffer.data(), len));
+	auto lights = parseLightPacket(packet);
 	printf("lights: %u\n", (unsigned int) lights.size());
 
 	// TODO: update lights
@@ -377,7 +373,7 @@ void Serveri::run() {
 					ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 					printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
-					lightPacket(buffer, len);
+					lightPacket(nonstd::make_span(buffer));
 
 					fd.revents = 0;
 
