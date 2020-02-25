@@ -357,7 +357,7 @@ void Serveri::setFDEvents(int fd, int events) {
 
 void Serveri::lightPacket(const std::vector<char> &buffer, unsigned int len) {
 	// parse packet
-	auto lights = parseLightPacket(buffer, len);
+	auto lights = parseLightPacket(nonstd::make_span(buffer.data(), len));
 	printf("lights: %u\n", (unsigned int) lights.size());
 
 	// TODO: update lights

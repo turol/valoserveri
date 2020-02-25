@@ -2,6 +2,10 @@
 #define LIGHTPACKET_H
 
 
+#define span_FEATURE_MAKE_SPAN 1
+
+#include <nonstd/span.hpp>
+
 #include <valoserveri/DMXController.h>
 
 
@@ -21,10 +25,9 @@ struct LightPacket {
 };
 
 
-// TODO: use std::span
 // TODO: fuzz
-std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsigned int len_) {
-	unsigned int len = std::min(size_t(len_), packet.size());
+// TODO: move to .cpp
+std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet) {
 	std::vector<LightColor> ret;
 
 	if (packet[0] != 1) {
@@ -40,7 +43,7 @@ std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsign
 	std::string tag;
 	int baseOffset = 3;
 
-	for (unsigned int i = 2; i < len; i++) {
+	for (unsigned int i = 2; i < packet.size(); i++) {
 		if (packet[i] == 0) {
 			tag = std::string(&packet[2], &packet[i]);
 			baseOffset = i + 1;
@@ -48,9 +51,10 @@ std::vector<LightColor> parseLightPacket(const std::vector<char> &packet, unsign
 		}
 	}
 
+	// TODO: return tag to caller
 	printf("tag: \"%s\"\n", tag.c_str());
 
-	unsigned int maxCount = (len - baseOffset) / 6;
+	unsigned int maxCount = (packet.size() - baseOffset) / 6;
 	ret.reserve(maxCount);
 	for (unsigned int i = 0; i < maxCount; i++) {
 		int offset = baseOffset + i * 6;
