@@ -1,6 +1,7 @@
 #include "valoserveri/Config.h"
 #include "valoserveri/DMXController.h"
 #include "valoserveri/LightPacket.h"
+#include "valoserveri/Logger.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -173,7 +174,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 	} break;
 
 	default:
-		printf("unhandled callback reason: %d\n", reason);
+		LOG_DEBUG("unhandled callback reason: {}", reason);
 		break;
 	}
 
@@ -199,7 +200,7 @@ Serveri::Serveri(const Config &config)
 	// socket
 	// TODO: IPv6
 	UDPfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	printf("fd: %d\n", UDPfd);
+	LOG_INFO("udp fd: {}", UDPfd);
 
 	// bind
 	struct sockaddr_in bindAddr;
@@ -212,7 +213,7 @@ Serveri::Serveri(const Config &config)
 	{
 		int retval = bind(UDPfd, reinterpret_cast<struct sockaddr *>(&bindAddr), sizeof(bindAddr));
 		if (retval != 0) {
-			printf("bind error: %d \"%s\"\n", errno, strerror(errno));
+			LOG_ERROR("bind error: {} \"{}\"", errno, strerror(errno));
 			close(UDPfd);
 			UDPfd = 0;
 			// TODO: better exception
@@ -297,7 +298,7 @@ Serveri::~Serveri() {
 
 
 void Serveri::addFD(int fd, int events) {
-	printf("addFD %d %d\n", fd, events);
+	LOG_DEBUG("addFD {} {}", fd, events);
 
 	pollfd p;
 	memset(&p, 0, sizeof(p));
@@ -309,7 +310,7 @@ void Serveri::addFD(int fd, int events) {
 
 
 void Serveri::deleteFD(int fd) {
-	printf("deleteFD %d\n", fd);
+	LOG_DEBUG("deleteFD {}", fd);
 
 	auto it = pollfds.begin();
 	while (it != pollfds.end()) {
@@ -323,7 +324,7 @@ void Serveri::deleteFD(int fd) {
 
 
 void Serveri::setFDEvents(int fd, int events) {
-	printf("setModeFD %d %d\n", fd, events);
+	LOG_DEBUG("setModeFD {} {}", fd, events);
 
 	auto it = pollfds.begin();
 	while (it != pollfds.end()) {
@@ -339,11 +340,11 @@ void Serveri::setFDEvents(int fd, int events) {
 void Serveri::lightPacket(const nonstd::span<const char> &packet) {
 	// parse packet
 	auto lights = parseLightPacket(packet);
-	printf("lights: %u\n", (unsigned int) lights.size());
+	LOG_INFO("number lights: {}", lights.size());
 
 	// TODO: update lights
 	for (const auto &l : lights) {
-		printf("%u: %u %u %u\n", l.index, l.color.red, l.color.green, l.color.blue);
+		LOG_DEBUG("{}: {} {} {}", l.index, l.color.red, l.color.green, l.color.blue);
 		dmx.setLightColor(l.index, l.color);
 	}
 }
@@ -371,7 +372,7 @@ void Serveri::run() {
 					socklen_t fromLength = sizeof(from);
 
 					ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
-					printf("received %d bytes from \"%s\":%d\n", int(len), inet_ntoa(from.sin_addr), ntohs(from.sin_port));
+					LOG_DEBUG("received {} bytes from \"{}\":{}\n", len, inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
 					lightPacket(nonstd::make_span(buffer));
 
@@ -409,6 +410,8 @@ int main(int /* argc */, char * /* argv */ []) {
 
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
+
+	Logger logger(config);
 
 	Serveri serveri(config);
 

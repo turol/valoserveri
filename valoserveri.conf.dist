@@ -5,6 +5,9 @@ udpPort = 9909
 wsPort = 9910
 lights = 2
 
+[logging]
+file=valoserveri.log
+level=warning
 
 [light0]
 type = rgb

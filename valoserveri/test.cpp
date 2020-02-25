@@ -1,5 +1,6 @@
 #include "valoserveri/Config.h"
 #include "valoserveri/DMXController.h"
+#include "valoserveri/Logger.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,6 +16,8 @@ int main(int argc, char *argv[]) {
 
 	// read config file
 	valoserveri::Config config("valoserveri.conf");
+
+	Logger logger(config);
 
 	LightsConfig lights = LightsConfig::parse(config);
 

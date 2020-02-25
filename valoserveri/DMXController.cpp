@@ -1,4 +1,5 @@
 #include "valoserveri/DMXController.h"
+#include "valoserveri/Logger.h"
 
 #include <fmt/format.h>
 
@@ -25,7 +26,7 @@ LightType parseLightType(const std::string &str) {
 LightsConfig LightsConfig::parse(const Config &config) {
 	unsigned int numLights = config.get("global", "lights", 0);
 
-	printf("num lights: %u\n", numLights);
+	LOG_INFO("number lights: {}", numLights);
 
 	// TODO: check count is not 0
 
@@ -120,7 +121,7 @@ void DMXController::setLightColor(unsigned int index, const Color &color) {
 
 	auto it = lightConfig.lights.find(index);
 	if (it == lightConfig.lights.end()) {
-		printf("Bad light index %u\n", index);
+		LOG_DEBUG("Bad light index {}", index);
 		return;
 	}
 
@@ -136,8 +137,7 @@ void DMXController::setLightColor(unsigned int index, const Color &color) {
 void DMXController::update() {
 	// write to tty
 	int retval = write(fd, dmxPacket.data(), dmxPacket.size());
-	printf("write returned %d\n", retval);
-
+	LOG_DEBUG("write returned {}", retval);
 }
 
 
