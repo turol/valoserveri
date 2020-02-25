@@ -104,8 +104,6 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
 
-	printf("callback reason: %d\n", reason);
-
 	struct per_session_data__minimal *pss =
 			(struct per_session_data__minimal *)user;
 	struct per_vhost_data__minimal *vhd =
@@ -179,6 +177,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 	} break;
 
 	default:
+		printf("unhandled callback reason: %d\n", reason);
 		break;
 	}
 
@@ -280,8 +279,7 @@ Serveri::Serveri(const Config &config)
 
 	// call service once so protocols get registered
 	// TODO: why is this needed? shouldn't be
-	int retval = lws_service(ws_context, 0);
-	printf("lws_service: %d\n", retval);
+	lws_service(ws_context, 0);
 
 #endif  // USE_LIBWEBSOCKETS
 }
@@ -360,7 +358,6 @@ void Serveri::run() {
 
 	while (true) {
 		int pollresult = poll(pollfds.data(), pollfds.size(), -1);
-		printf("pollresult: %d\n", pollresult);
 
 		int count = 0;
 		for (pollfd &fd : pollfds) {
@@ -387,9 +384,8 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 				} else {
-
-					int retval = lws_service_fd(ws_context, &fd);
-					printf("lws_service_fd: %d\n", retval);
+					// TODO: handle errors
+					lws_service_fd(ws_context, &fd);
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -402,8 +398,7 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 		// TODO: hax, remove after poll works
-		int retval = lws_service(ws_context, 0);
-		printf("lws_service: %d\n", retval);
+		lws_service(ws_context, 0);
 
 #endif  // USE_LIBWEBSOCKETS
 
