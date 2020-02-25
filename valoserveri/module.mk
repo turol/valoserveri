@@ -14,6 +14,10 @@ FILES:= \
 SRC_$(d):=$(addprefix $(d)/,$(FILES))
 
 
+afl-lightpackets_MODULES:=date fmt
+afl-lightpackets_SRC:=$(SRC_$(d)) $(dir)/afl-lightpackets.cpp
+
+
 serveri_MODULES:=date fmt
 serveri_SRC:=$(SRC_$(d)) $(dir)/serveri.cpp
 
@@ -31,6 +35,7 @@ test_SRC:=$(SRC_$(d)) $(dir)/test.cpp
 
 
 PROGRAMS+= \
+	afl-lightpackets \
 	serveri \
 	test \
 	# empty line

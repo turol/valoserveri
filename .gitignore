@@ -2,6 +2,7 @@
 *.d
 *.o
 
+binaries/afl-lightpackets-bin
 binaries/serveri-bin
 binaries/test-bin
 
