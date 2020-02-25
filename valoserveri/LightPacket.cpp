@@ -35,7 +35,7 @@ std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet)
 	}
 
 	// TODO: return tag to caller
-	printf("tag: \"%s\"\n", tag.c_str());
+	// printf("tag: \"%s\"\n", tag.c_str());
 
 	unsigned int maxCount = (packet.size() - baseOffset) / 6;
 	ret.reserve(maxCount);
