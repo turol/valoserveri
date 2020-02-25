@@ -12,6 +12,8 @@ TSAN:=n
 UBSAN:=n
 
 
+LIBFUZZER:=n
+
 USE_LIBWEBSOCKETS:=y
 
 

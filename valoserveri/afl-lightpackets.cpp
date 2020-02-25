@@ -1,16 +1,8 @@
 #include <sys/stat.h>
 
 
-#include "valoserveri/LightPacket.h"
-
-
-using namespace valoserveri;
-
-
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	parseLightPacket(nonstd::make_span(reinterpret_cast<const char *>(data), size));
-	return 0;
-}
+// ugly but eh
+#include "valoserveri/libfuzzer-lightpackets.cpp"
 
 
 struct FILEDeleter {
