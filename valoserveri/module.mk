@@ -6,6 +6,7 @@ d              := $(dir)
 FILES:= \
 	Config.cpp \
 	DMXController.cpp \
+	LightPacket.cpp \
 	Logger.cpp \
 	# empty line
 
