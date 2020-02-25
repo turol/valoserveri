@@ -8,6 +8,11 @@ namespace valoserveri {
 std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet) {
 	std::vector<LightColor> ret;
 
+	if (packet.size() < 3) {
+		// too small
+		return ret;
+	}
+
 	if (packet[0] != 1) {
 		// bad version
 		return ret;
