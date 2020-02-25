@@ -387,9 +387,9 @@ void Serveri::run() {
 #endif  // USE_LIBWEBSOCKETS
 
 				}
-			}
 
-			count++;
+				count++;
+			}
 		}
 
 #ifdef USE_LIBWEBSOCKETS
