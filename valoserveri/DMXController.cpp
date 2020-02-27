@@ -118,12 +118,6 @@ DMXController::~DMXController() {
 
 
 void DMXController::setLightColor(unsigned int index, const Color &color) {
-	// range check index
-	// TODO: remove this, it's redundant
-	if (index >= 100) {
-		throw std::runtime_error("Bad light index" + std::to_string(index));
-	}
-
 	auto it = lightConfig.lights.find(index);
 	if (it == lightConfig.lights.end()) {
 		LOG_DEBUG("Bad light index {}", index);
