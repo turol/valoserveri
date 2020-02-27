@@ -188,7 +188,7 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 Serveri::Serveri(const Config &config)
 : UDPfd(0)
 , dmx(config)
-, buflen(512)
+, buflen(2048)
 #ifdef USE_LIBWEBSOCKETS
 , ws_context(nullptr)
 #endif  // USE_LIBWEBSOCKETS
@@ -241,7 +241,7 @@ Serveri::Serveri(const Config &config)
 			  .name                  = "default"
 			, .callback              = callback
 			, .per_session_data_size = sizeof(struct per_session_data__minimal)
-			, .rx_buffer_size        = 128
+			, .rx_buffer_size        = buflen
 			, .id                    = 1
 			, .user                  = nullptr
 			, .tx_packet_size        = 0
