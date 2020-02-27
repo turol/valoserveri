@@ -133,11 +133,11 @@ void DMXController::setLightColor(unsigned int index, const Color &color) {
 	unsigned int offset = it->second.address + 4;
 	switch (it->second.type) {
 	case LightType::RGB:
-	dmxPacket[offset + 0] = color.red;
-	dmxPacket[offset + 1] = color.green;
-	dmxPacket[offset + 2] = color.blue;
-	dmxPacket[offset + 3] = 255;
-	dmxPacket[offset + 4] = 0;
+		dmxPacket[offset + 0] = color.red;
+		dmxPacket[offset + 1] = color.green;
+		dmxPacket[offset + 2] = color.blue;
+		dmxPacket[offset + 3] = 255;
+		dmxPacket[offset + 4] = 0;
 		break;
 
 	case LightType::UV: {
