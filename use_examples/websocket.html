@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -7,84 +8,124 @@
 
 <body>
 <script>
-const lightCount = 36;
-const host = "127.0.0.1";
-const port = "9910";
 
-var socket = new WebSocket("ws://"+host+":"+port);
-var timeout = undefined;
-socket.onclose = function (event) {
-  // alert("Socket closed!");
-  console.log("Socket closed! ", event);
-  clearTimeout(timeout);
-}
-socket.onerror = function (event) {
-  console.log("Socket error! ", event);
-}
+var socket;
 
-socket.onmessage = function incoming(data) {
-  console.log("received:", data);
-};
+function yhdista() {
+    const host = document.getElementById("palvelin").value;
+    const port = document.getElementById("port").value;
+    const lightCount = document.getElementById("lightCount").value;
+    var tagi = document.getElementById("tag").value;
+    console.log("yhdistä " + host);
 
-socket.onopen = function (event) {
-  console.log("Socket opened ", event);
-  var headerLength = 1 + 5;
-  var data = new Uint8Array(headerLength + 6 * lightCount);
-  data[0] = 1;
-  data[1] = 0;  // Nick tag
-  data[2] = 74; // J
-  data[3] = 77; // M
-  data[4] = 76; // L
-  data[5] = 0;  // Nick tag end
-
-
-  var packets = 0;
-  function lightingLoop() {
-    for(var i = 0; i < lightCount; i++) {
-      var p = headerLength + 6 * i; 
-      data[p + 0] = 1; // Tehosteen tyyppi on yksi eli valo
-      data[p + 1] = i; // Ensimmäinen valo löytyy indeksistä nolla
-      data[p + 2] = 0; // Laajennustavu. Aina nolla.
-      data[p + 3] = Math.floor(Math.random() * 255); // Punainen
-      data[p + 4] = Math.floor(Math.random() * 255); // Vihreä
-      data[p + 5] = Math.floor(Math.random() * 255); // Sininen
+    if (!tagi) {
+        document.getElementById("tagivirhe").textContent = "Kirjoita tagi!";
+        console.log("tyhjä tagi");
+        return;
+    }
+    
+    socket = new WebSocket("ws://"+host+":"+port);
+    var timeout = undefined;
+    socket.onclose = function (event) {
+      // alert("Socket closed!");
+      console.log("Socket closed! ", event);
+      clearTimeout(timeout);
+    }
+    socket.onerror = function (event) {
+      console.log("Socket error! ", event);
     }
 
-    var v = Math.floor(Math.random() * lightCount);
-    var p = headerLength + 6 * v; 
-    data[p + 1] = v; // Ensimmäinen valo löytyy indeksistä nolla
-    data[p + 3] = Math.floor(Math.random() * 255); // Punainen
-    data[p + 4] = Math.floor(Math.random() * 255); // Vihreä
-    data[p + 5] = Math.floor(Math.random() * 255); // Sininen
+    socket.onmessage = function incoming(data) {
+      console.log("received:", data);
+    };
 
-    packets++;
+    socket.onopen = function (event) {
+        console.log("Socket opened ", event);
+        var headerLength = 3 + tagi.length;
+        var data = new Uint8Array(headerLength + 6 * lightCount);
+        data[0] = 1;
+        data[1] = 0;  // Nick tag
 
-    if (socket.bufferedAmount > data.byteLength) {
-      // puskuri kerääntyy
-      console.log(packets + ", socket send buffer: " + socket.bufferedAmount);
-    }
+        var taglen = tagi.length;
+        
+        console.log("tag \"" + tagi + "\" len " + taglen);
+        for (let i = 0; i < taglen; i++) {
+            data[i + 2] = tagi.charCodeAt(i);
+        }
+        data[2 + taglen] = 0;  // Nick tag end
 
-    socket.send(data); 
+        var packets = 0;
+        function lightingLoop() {
+            if (!socket) {
+                return;
+            }
+        
+            for(var i = 0; i < lightCount; i++) {
+                var p = headerLength + 6 * i; 
+                data[p + 0] = 1; // Tehosteen tyyppi on yksi eli valo
+                data[p + 1] = i; // Ensimmäinen valo löytyy indeksistä nolla
+                data[p + 2] = 0; // Laajennustavu. Aina nolla.
+                data[p + 3] = Math.floor(Math.random() * 255); // Punainen
+                data[p + 4] = Math.floor(Math.random() * 255); // Vihreä
+                data[p + 5] = Math.floor(Math.random() * 255); // Sininen
+            }
 
-    var str = "Osoite: " + host + ":" + port + "<br/>"
-      + "Paketteja: " + packets + "<br/>"
-      + "Paketin koko: " + data.byteLength + "<br/>"
-      + "Puskuroitu data: " + socket.bufferedAmount + "<br/>"
+            var v = Math.floor(Math.random() * lightCount);
+            var p = headerLength + 6 * v; 
+            data[p + 1] = v; // Ensimmäinen valo löytyy indeksistä nolla
+            data[p + 3] = Math.floor(Math.random() * 255); // Punainen
+            data[p + 4] = Math.floor(Math.random() * 255); // Vihreä
+            data[p + 5] = Math.floor(Math.random() * 255); // Sininen
 
-    document.getElementById("content").innerHTML = str;
+            packets++;
 
-    timeout = setTimeout(lightingLoop, 10);
-  }
+            if (socket.bufferedAmount > data.byteLength) {
+                // puskuri kerääntyy
+                console.log(packets + ", socket send buffer: " + socket.bufferedAmount);
+            }
 
-  lightingLoop();
+            socket.send(data); 
+
+            var str = "Osoite: " + host + ":" + port + "<br/>"
+              + "Paketteja: " + packets + "<br/>"
+              + "Paketin koko: " + data.byteLength + "<br/>"
+              + "Puskuroitu data: " + socket.bufferedAmount + "<br/>"
+
+            document.getElementById("content").innerHTML = str;
+
+            timeout = setTimeout(lightingLoop, 10);
+        }
+
+        lightingLoop();
+    };
 };
 
-
+function katkaise() {
+    console.log("katkaise");
+    if (socket) {
+        socket.close();
+        socket = null;
+    }
+};
 </script>
+
+Tagi: <input id="tag" value="" placeholder="tagi tähän"> <span id="tagivirhe"></span> <br />
+Palvelin: <input id="palvelin" value="127.0.0.1" /> <br />
+Portti: <input id="port" value="9910" /> <br />
+Valojen lkm: <input id="lightCount" value="27" /> <br />
+<button id="yhdista"  >Yhdistä</button> <br />
+<button id="katkaise" >Katkaise</button> <br />
 
 <p>Ammutaan 10ms välein valoja WebSocketin yli effectserverille!</p>
 <p>Varoitus: Webbiselaimet saattavat tiputtaa websocket-yhteyksien lähetysmääriä mikäli paljon yhteyksiä auki, tai effectserver ja tämä sivu ovat samalla selaimella auki, tai tämä sivu ei ole aktiivisena välilehtenä.</p>
 <div id="content"/>
+
+<script>
+
+document.getElementById("yhdista").addEventListener("click", yhdista);
+document.getElementById("katkaise").addEventListener("click", katkaise);
+
+</script>
 
 </body>
 </html>
