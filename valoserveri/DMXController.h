@@ -29,11 +29,13 @@ enum class LightType : uint8_t {
 struct Light {
 	LightType  type;
 	uint8_t    address;
+	uint8_t    numChannels;
 
 
 	Light()
 	: type(LightType::RGB)
 	, address(0)
+	, numChannels(0)
 	{
 	}
 

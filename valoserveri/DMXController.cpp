@@ -49,6 +49,11 @@ LightsConfig LightsConfig::parse(const Config &config) {
 		light.type    = parseLightType(type);
 		light.address = address;
 
+		unsigned int defaultNumChannels = (light.type == LightType::UV) ? 2 : 5;
+
+		light.numChannels = config.get(section, "numLights", defaultNumChannels);
+		// TODO: sanity check numChannels
+
 		l.lights.emplace(i, std::move(light));
 	}
 
