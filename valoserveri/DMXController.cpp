@@ -43,11 +43,11 @@ LightsConfig LightsConfig::parse(const Config &config) {
 
 		// TODO: check address is not 0
 		// TODO: range-check address ( < 256)
-		printf("light \"%u\"  address \"%u\"  type \"%s\"\n", i, address, type.c_str());
-
 		Light light;
 		light.type    = parseLightType(type);
 		light.address = address;
+
+		printf("light \"%u\"  address \"%u\"  type \"%s\"\n", i, address, lightTypeStrings[int(light.type)]);
 
 		unsigned int defaultNumChannels = (light.type == LightType::UV) ? 2 : 5;
 
