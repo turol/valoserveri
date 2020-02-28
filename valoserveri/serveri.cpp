@@ -11,6 +11,14 @@
 
 #include <cassert>
 
+#ifdef USE_LIBWEBSOCKETS
+
+#include <nlohmann/json.hpp>
+
+using namespace nlohmann;
+
+#endif  // USE_LIBWEBSOCKETS
+
 
 using namespace valoserveri;
 

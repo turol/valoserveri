@@ -60,6 +60,7 @@ CFLAGS+=-isystem$(TOPDIR)/foreign/date/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/fmt/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/libwebsockets/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/libwebsockets/lib
+CFLAGS+=-isystem$(TOPDIR)/foreign/nlohmann_json/include
 CFLAGS+=-isystem$(TOPDIR)/foreign/span-lite/include
 
 
