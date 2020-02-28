@@ -31,6 +31,8 @@ class Serveri {
 	// TODO: does this need to live indefinetely?
 	std::vector<lws_protocols>  protocols;
 
+	std::unordered_map<struct lws *, std::string>  monitorConnections;
+
 #endif  // USE_LIBWEBSOCKETS
 
 	std::vector<pollfd>         pollfds;
@@ -54,11 +56,19 @@ public:
 
 	// TODO: signalQuit
 
+#ifdef USE_LIBWEBSOCKETS
+
 	void addFD(int fd, int events);
 
 	void deleteFD(int fd);
 
 	void setFDEvents(int fd, int events);
+
+	void addMonitor(struct lws *wsi);
+
+	void deleteMonitor(struct lws *wsi);
+
+#endif  // USE_LIBWEBSOCKETS
 
 	void lightPacket(const nonstd::span<const char> &packet);
 
@@ -119,8 +129,27 @@ static int callback(struct lws * /* wsi */, enum lws_callback_reasons reason, vo
 }
 
 
-static int callback_monitor(struct lws * /* wsi */, enum lws_callback_reasons reason, void * /* user */, void * /* in */, size_t /* len */) {
+static int callback_monitor(struct lws *wsi, enum lws_callback_reasons reason, void * /* user */, void * /* in */, size_t /* len */) {
+	// TODO: get Serveri from user
+	Serveri *serveri = globalServeri;
+	assert(serveri);
+
 	switch (reason) {
+	case LWS_CALLBACK_ESTABLISHED:
+		assert(wsi);
+		serveri->addMonitor(wsi);
+		break;
+
+	case LWS_CALLBACK_CLOSED:
+		assert(wsi);
+		serveri->deleteMonitor(wsi);
+		break;
+
+	case LWS_CALLBACK_SERVER_WRITEABLE:
+		LOG_DEBUG("monitor writeable");
+		// TODO: write current state
+		break;
+
 	default:
 		LOG_DEBUG("unhandled monitor callback reason: {}", reason);
 		break;
@@ -256,6 +285,9 @@ Serveri::~Serveri() {
 }
 
 
+#ifdef USE_LIBWEBSOCKETS
+
+
 void Serveri::addFD(int fd, int events) {
 	LOG_DEBUG("addFD {} {}", fd, events);
 
@@ -294,6 +326,43 @@ void Serveri::setFDEvents(int fd, int events) {
 		it++;
 	}
 }
+
+
+#define ADDRSIZE 16
+
+
+void Serveri::addMonitor(struct lws *wsi) {
+	assert(wsi);
+
+	std::array<char, ADDRSIZE> addr_;
+	memset(addr_.data(), 0, addr_.size());
+	lws_get_peer_simple(wsi, addr_.data(), addr_.size() - 1);
+
+	std::string addr(addr_.data(), strnlen(addr_.data(), addr_.size()));
+
+	auto p = monitorConnections.emplace(wsi, addr);
+	if (p.second) {
+		LOG_DEBUG("Added monitoring connection {}", addr);
+	} else {
+		LOG_ERROR("Tried to add duplicate monitoring connection {}", addr);
+	}
+}
+
+
+void Serveri::deleteMonitor(struct lws *wsi) {
+	assert(wsi);
+
+	auto it = monitorConnections.find(wsi);
+	if (it != monitorConnections.end()) {
+		LOG_DEBUG("Deleted monitoring connection {}", it->second);
+		monitorConnections.erase(it);
+	} else {
+		LOG_ERROR("Tried to delete nonexistent monitoring connection");
+	}
+}
+
+
+#endif  // USE_LIBWEBSOCKETS
 
 
 void Serveri::lightPacket(const nonstd::span<const char> &buf) {
@@ -376,9 +445,13 @@ void Serveri::run() {
 		if (lightsDirty) {
 			dmx.update();
 			lightsDirty = false;
-		}
 
-		// TODO: send updates to websocket monitors
+#ifdef USE_LIBWEBSOCKETS
+
+			LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
+
+#endif  // USE_LIBWEBSOCKETS
+		}
 	}
 }
 
