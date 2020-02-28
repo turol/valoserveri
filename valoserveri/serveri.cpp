@@ -28,6 +28,8 @@ class Serveri {
 
 	// TODO: quit signaled, quit pipe
 
+	LightPacket                 currentState;
+
 	DMXController               dmx;
 
 	size_t                      buflen;
@@ -40,6 +42,8 @@ class Serveri {
 	std::vector<lws_protocols>  protocols;
 
 	std::unordered_map<struct lws *, std::string>  monitorConnections;
+
+	std::vector<uint8_t>                           monitorMessage;
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -75,6 +79,8 @@ public:
 	void addMonitor(struct lws *wsi);
 
 	void deleteMonitor(struct lws *wsi);
+
+	std::vector<uint8_t> &getMonitorMessage() { return monitorMessage; }
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -156,15 +162,8 @@ static int callback_monitor(struct lws *wsi, enum lws_callback_reasons reason, v
 	case LWS_CALLBACK_SERVER_WRITEABLE: {
 		LOG_DEBUG("monitor writeable");
 
-		std::vector<uint8_t> buf(LWS_PRE + 4, 0);
-		buf[LWS_PRE + 0] = 't';
-		buf[LWS_PRE + 1] = 'e';
-		buf[LWS_PRE + 2] = 's';
-		buf[LWS_PRE + 3] = 't';
-
-		lws_write(wsi, &buf[LWS_PRE], 4, LWS_WRITE_TEXT);
-		// TODO: write current state
-
+		auto &monitorMessage = serveri->getMonitorMessage();
+		lws_write(wsi, &monitorMessage[LWS_PRE], monitorMessage.size() - LWS_PRE, LWS_WRITE_TEXT);
 	} break;
 
 	default:
@@ -189,6 +188,8 @@ Serveri::Serveri(const Config &config)
 , lightsDirty(true)  // so we write known state on startup
 {
 	globalServeri = this;
+
+	// TODO: initialize currentState
 
 	int port = config.get("global", "udpPort", 9909);
 
@@ -392,6 +393,8 @@ void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 		dmx.setLightColor(l.index, l.color);
 	}
 
+	// TODO: update currentState
+
 	// TODO: only set dirty if anything changed
 	lightsDirty = true;
 }
@@ -466,6 +469,14 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 			if (!monitorConnections.empty()) {
+				// TODO: write light state to json
+				json j;
+				j["numLights"] = 1;
+
+				std::string s = j.dump();
+				monitorMessage.resize(LWS_PRE + s.size(), 0);
+				memcpy(&monitorMessage[LWS_PRE], s.data(), s.size());
+
 				LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
 
 				for (auto &c : monitorConnections) {
