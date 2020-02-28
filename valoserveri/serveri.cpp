@@ -71,9 +71,6 @@ static Serveri *globalServeri = nullptr;
 #ifdef USE_LIBWEBSOCKETS
 
 
-static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
-
-
 static int callback(struct lws * /* wsi */, enum lws_callback_reasons reason, void * /* user */, void *in, size_t len) {
 	// TODO: get Serveri from user
 
