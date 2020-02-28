@@ -1,0 +1,6 @@
+commit 411158d896c86e210b8fdea47a41522d4408380b
+Merge: 7b0c50b9 56109eac
+Author: Niels Lohmann <mail@nlohmann.me>
+Date:   Sun Nov 10 21:39:14 2019 +0100
+
+    Merge branch 'release/3.7.2' into develop
