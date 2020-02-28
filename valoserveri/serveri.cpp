@@ -351,9 +351,18 @@ void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 
 void Serveri::run() {
 	std::vector<char> buffer(buflen, 0);
+	std::vector<pollfd> processFDs;
 
 	while (true) {
+		processFDs.clear();
+
 		int pollresult = poll(pollfds.data(), pollfds.size(), -1);
+		if (pollresult < 0) {
+			LOG_ERROR("poll failed: {}", strerror(errno));
+			// TODO: should continue?
+			return;
+		}
+		processFDs.reserve(pollresult);
 
 		int count = 0;
 		for (pollfd &fd : pollfds) {
@@ -380,9 +389,9 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 				} else {
-					// TODO: handle errors
-					// TODO: this can change pollfds, should not call while iterating over it
-					lws_service_fd(ws_context, &fd);
+					// lws_service_fd could change pollfds, must not call it from here
+					processFDs.push_back(fd);
+					fd.revents = 0;
 
 #endif  // USE_LIBWEBSOCKETS
 
@@ -391,6 +400,15 @@ void Serveri::run() {
 				count++;
 			}
 		}
+
+#ifdef USE_LIBWEBSOCKETS
+
+		for (auto &fd : processFDs) {
+			// TODO: handle errors
+			lws_service_fd(ws_context, &fd);
+		}
+
+#endif  // USE_LIBWEBSOCKETS
 
 		// TODO: only call if we got light packet
 		dmx.update();
