@@ -71,70 +71,20 @@ static Serveri *globalServeri = nullptr;
 #ifdef USE_LIBWEBSOCKETS
 
 
-/* one of these created for each message */
-
-struct msg {
-	void *payload; /* is malloc'd */
-	size_t len;
-};
-
-
-/* one of these is created for each client connecting to us */
-
-struct per_session_data__minimal {
-	struct per_session_data__minimal *pss_list;
-	struct lws *wsi;
-	int last; /* the last message number we sent */
-};
-
-
-/* one of these is created for each vhost our protocol is used with */
-
-struct per_vhost_data__minimal {
-	struct lws_context *context;
-	struct lws_vhost *vhost;
-	const struct lws_protocols *protocol;
-
-	struct per_session_data__minimal *pss_list; /* linked-list of live pss*/
-
-	struct msg amsg; /* the one pending message... */
-	int current; /* the current message number we are caching */
-};
-
-
 static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len);
 
 
-static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
-
-	struct per_session_data__minimal *pss =
-			(struct per_session_data__minimal *)user;
-	struct per_vhost_data__minimal *vhd =
-			(struct per_vhost_data__minimal *)
-			lws_protocol_vh_priv_get(lws_get_vhost(wsi),
-					lws_get_protocol(wsi));
+static int callback(struct lws * /* wsi */, enum lws_callback_reasons reason, void * /* user */, void *in, size_t len) {
+	// TODO: get Serveri from user
 
 	switch (reason) {
 	case LWS_CALLBACK_PROTOCOL_INIT:
-		vhd = (struct per_vhost_data__minimal *) lws_protocol_vh_priv_zalloc(lws_get_vhost(wsi),
-				lws_get_protocol(wsi),
-				sizeof(struct per_vhost_data__minimal));
-		vhd->context = lws_get_context(wsi);
-		vhd->protocol = lws_get_protocol(wsi);
-		vhd->vhost = lws_get_vhost(wsi);
 		break;
 
 	case LWS_CALLBACK_ESTABLISHED:
-		/* add ourselves to the list of live pss held in the vhd */
-		lws_ll_fwd_insert(pss, pss_list, vhd->pss_list);
-		pss->wsi = wsi;
-		pss->last = vhd->current;
 		break;
 
 	case LWS_CALLBACK_CLOSED:
-		/* remove our closing pss from the list of live pss */
-		lws_ll_fwd_remove(struct per_session_data__minimal, pss_list,
-				  pss, vhd->pss_list);
 		break;
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
@@ -239,7 +189,7 @@ Serveri::Serveri(const Config &config)
 		lws_protocols light = {
 			  .name                  = "default"
 			, .callback              = callback
-			, .per_session_data_size = sizeof(struct per_session_data__minimal)
+			, .per_session_data_size = 0
 			, .rx_buffer_size        = buflen
 			, .id                    = 1
 			, .user                  = nullptr
@@ -251,7 +201,7 @@ Serveri::Serveri(const Config &config)
 		lws_protocols monitor = {
 			  .name                  = "monitor"
 			, .callback              = callback_monitor
-			, .per_session_data_size = sizeof(struct per_session_data__minimal)
+			, .per_session_data_size = 0
 			, .rx_buffer_size        = buflen
 			, .id                    = 2
 			, .user                  = nullptr
