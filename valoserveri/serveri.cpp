@@ -145,10 +145,19 @@ static int callback_monitor(struct lws *wsi, enum lws_callback_reasons reason, v
 		serveri->deleteMonitor(wsi);
 		break;
 
-	case LWS_CALLBACK_SERVER_WRITEABLE:
+	case LWS_CALLBACK_SERVER_WRITEABLE: {
 		LOG_DEBUG("monitor writeable");
+
+		std::vector<uint8_t> buf(LWS_PRE + 4, 0);
+		buf[LWS_PRE + 0] = 't';
+		buf[LWS_PRE + 1] = 'e';
+		buf[LWS_PRE + 2] = 's';
+		buf[LWS_PRE + 3] = 't';
+
+		lws_write(wsi, &buf[LWS_PRE], 4, LWS_WRITE_TEXT);
 		// TODO: write current state
-		break;
+
+	} break;
 
 	default:
 		LOG_DEBUG("unhandled monitor callback reason: {}", reason);
@@ -448,7 +457,13 @@ void Serveri::run() {
 
 #ifdef USE_LIBWEBSOCKETS
 
+			if (!monitorConnections.empty()) {
 			LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
+
+				for (auto &c : monitorConnections) {
+					lws_callback_on_writable(c.first);
+				}
+			}
 
 #endif  // USE_LIBWEBSOCKETS
 		}
