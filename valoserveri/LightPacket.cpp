@@ -4,9 +4,8 @@
 namespace valoserveri {
 
 
-// TODO: fuzz
-std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet) {
-	std::vector<LightColor> ret;
+LightPacket parseLightPacket(const nonstd::span<const char> &packet) {
+	LightPacket ret;
 
 	if (packet.size() < 3) {
 		// too small
@@ -23,22 +22,18 @@ std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet)
 		return ret;
 	}
 
-	std::string tag;
 	int baseOffset = 3;
 
 	for (unsigned int i = 2; i < packet.size(); i++) {
 		if (packet[i] == 0) {
-			tag = std::string(&packet[2], &packet[i]);
+			ret.tag = std::string(&packet[2], &packet[i]);
 			baseOffset = i + 1;
 			break;
 		}
 	}
 
-	// TODO: return tag to caller
-	// printf("tag: \"%s\"\n", tag.c_str());
-
 	unsigned int maxCount = (packet.size() - baseOffset) / 6;
-	ret.reserve(maxCount);
+	ret.lights.reserve(maxCount);
 	for (unsigned int i = 0; i < maxCount; i++) {
 		int offset = baseOffset + i * 6;
 
@@ -55,7 +50,7 @@ std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet)
 		l.color.red   = packet[offset + 3];
 		l.color.green = packet[offset + 4];
 		l.color.blue  = packet[offset + 5];
-		ret.emplace_back(std::move(l));
+		ret.lights.emplace_back(std::move(l));
 	}
 
 	return ret;

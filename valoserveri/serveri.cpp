@@ -337,13 +337,12 @@ void Serveri::setFDEvents(int fd, int events) {
 }
 
 
-void Serveri::lightPacket(const nonstd::span<const char> &packet) {
+void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 	// parse packet
-	auto lights = parseLightPacket(packet);
-	LOG_INFO("number lights: {}", lights.size());
+	auto packet = parseLightPacket(buf);
+	LOG_INFO("number lights in packet: {}", packet.lights.size());
 
-	// TODO: update lights
-	for (const auto &l : lights) {
+	for (const auto &l : packet.lights) {
 		LOG_DEBUG("{}: {} {} {}", l.index, l.color.red, l.color.green, l.color.blue);
 		dmx.setLightColor(l.index, l.color);
 	}

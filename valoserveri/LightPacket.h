@@ -19,13 +19,12 @@ struct LightColor {
 
 
 struct LightPacket {
-	unsigned int             version;
 	std::string              tag;
 	std::vector<LightColor>  lights;
 };
 
 
-std::vector<LightColor> parseLightPacket(const nonstd::span<const char> &packet);
+LightPacket parseLightPacket(const nonstd::span<const char> &packet);
 
 
 }  // namespace valoserveri
