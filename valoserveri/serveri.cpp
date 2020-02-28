@@ -35,6 +35,8 @@ class Serveri {
 
 	std::vector<pollfd>  pollfds;
 
+	bool                        lightsDirty;
+
 
 public:
 
@@ -138,6 +140,7 @@ Serveri::Serveri(const Config &config)
 #ifdef USE_LIBWEBSOCKETS
 , ws_context(nullptr)
 #endif  // USE_LIBWEBSOCKETS
+, lightsDirty(true)  // so we write known state on startup
 {
 	globalServeri = this;
 
@@ -302,6 +305,9 @@ void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 		LOG_DEBUG("{}: {} {} {}", l.index, l.color.red, l.color.green, l.color.blue);
 		dmx.setLightColor(l.index, l.color);
 	}
+
+	// TODO: only set dirty if anything changed
+	lightsDirty = true;
 }
 
 
@@ -366,8 +372,11 @@ void Serveri::run() {
 
 #endif  // USE_LIBWEBSOCKETS
 
-		// TODO: only call if we got light packet
-		dmx.update();
+		// only call if we got light packet
+		if (lightsDirty) {
+			dmx.update();
+			lightsDirty = false;
+		}
 
 		// TODO: send updates to websocket monitors
 	}
