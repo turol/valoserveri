@@ -458,7 +458,7 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 			if (!monitorConnections.empty()) {
-			LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
+				LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
 
 				for (auto &c : monitorConnections) {
 					lws_callback_on_writable(c.first);
