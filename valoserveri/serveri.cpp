@@ -9,6 +9,8 @@
 
 #include <libwebsockets.h>
 
+#include <cassert>
+
 
 using namespace valoserveri;
 
@@ -111,7 +113,6 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 			(struct per_vhost_data__minimal *)
 			lws_protocol_vh_priv_get(lws_get_vhost(wsi),
 					lws_get_protocol(wsi));
-	int m;
 
 	switch (reason) {
 	case LWS_CALLBACK_PROTOCOL_INIT:
@@ -137,21 +138,8 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 		break;
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
-		if (!vhd->amsg.payload)
-			break;
-
-		if (pss->last == vhd->current)
-			break;
-
-		/* notice we allowed for LWS_PRE in the payload already */
-		m = lws_write(wsi, ((unsigned char *)vhd->amsg.payload) +
-			      LWS_PRE, vhd->amsg.len, LWS_WRITE_TEXT);
-		if (m < (int)vhd->amsg.len) {
-			lwsl_err("ERROR %d writing to ws\n", m);
-			return -1;
-		}
-
-		pss->last = vhd->current;
+		// should not be called, one-way protocol
+		assert(false);
 		break;
 
 	case LWS_CALLBACK_RECEIVE: {
