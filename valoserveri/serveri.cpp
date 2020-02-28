@@ -381,6 +381,7 @@ void Serveri::run() {
 
 				} else {
 					// TODO: handle errors
+					// TODO: this can change pollfds, should not call while iterating over it
 					lws_service_fd(ws_context, &fd);
 
 #endif  // USE_LIBWEBSOCKETS
@@ -391,7 +392,10 @@ void Serveri::run() {
 			}
 		}
 
+		// TODO: only call if we got light packet
 		dmx.update();
+
+		// TODO: send updates to websocket monitors
 	}
 }
 
