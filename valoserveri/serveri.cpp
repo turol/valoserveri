@@ -16,24 +16,24 @@ using namespace valoserveri;
 
 
 class Serveri {
-	int                 UDPfd;
+	int                         UDPfd;
 
 	// TODO: quit signaled, quit pipe
 
-	DMXController       dmx;
+	DMXController               dmx;
 
-	size_t              buflen;
+	size_t                      buflen;
 
 #ifdef USE_LIBWEBSOCKETS
 
-	struct lws_context  *ws_context;
+	struct lws_context          *ws_context;
 
 	// TODO: does this need to live indefinetely?
 	std::vector<lws_protocols>  protocols;
 
 #endif  // USE_LIBWEBSOCKETS
 
-	std::vector<pollfd>  pollfds;
+	std::vector<pollfd>         pollfds;
 
 	bool                        lightsDirty;
 
