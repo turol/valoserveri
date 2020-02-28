@@ -182,6 +182,17 @@ static int callback(struct lws *wsi, enum lws_callback_reasons reason, void *use
 }
 
 
+static int callback_monitor(struct lws * /* wsi */, enum lws_callback_reasons reason, void * /* user */, void * /* in */, size_t /* len */) {
+	switch (reason) {
+	default:
+		LOG_DEBUG("unhandled monitor callback reason: {}", reason);
+		break;
+	}
+
+	return 0;
+}
+
+
 #endif  // USE_LIBWEBSOCKETS
 
 
@@ -249,7 +260,17 @@ Serveri::Serveri(const Config &config)
 		};
 		protocols.push_back(light);
 
-		// TODO: monitor protocol
+		lws_protocols monitor = {
+			  .name                  = "monitor"
+			, .callback              = callback_monitor
+			, .per_session_data_size = sizeof(struct per_session_data__minimal)
+			, .rx_buffer_size        = buflen
+			, .id                    = 2
+			, .user                  = nullptr
+			, .tx_packet_size        = 0
+
+		};
+		protocols.push_back(monitor);
 
 		// TODO: do we need this?
 		lws_protocols http = { "http", lws_callback_http_dummy, 0, 0, 0, nullptr, 0 };
