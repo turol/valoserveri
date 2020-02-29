@@ -91,6 +91,8 @@ public:
 
 	void setFDEvents(int fd, int events);
 
+	void updateMonitorMessage();
+
 	void addMonitor(struct lws *wsi);
 
 	void deleteMonitor(struct lws *wsi);
@@ -382,6 +384,23 @@ void Serveri::setFDEvents(int fd, int events) {
 }
 
 
+void Serveri::updateMonitorMessage() {
+	// write light state to json and serialize for sending to monitors
+	json j;
+	unsigned int numLights = currentState.lights.size();
+	j["numLights"] = numLights;
+	j["tag"]       = currentState.tag;
+	for (unsigned int i = 0; i < numLights; i++) {
+		Color c = currentState.lights[i];
+		j["light" + std::to_string(i)] = fmt::format("{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
+	}
+
+	std::string s = j.dump();
+	monitorMessage.resize(LWS_PRE + s.size(), 0);
+	memcpy(&monitorMessage[LWS_PRE], s.data(), s.size());
+}
+
+
 void Serveri::addMonitor(struct lws *wsi) {
 	assert(wsi);
 
@@ -524,19 +543,7 @@ void Serveri::run() {
 #ifdef USE_LIBWEBSOCKETS
 
 			if (!monitorConnections.empty()) {
-				// TODO: write light state to json
-				json j;
-				unsigned int numLights = currentState.lights.size();
-				j["numLights"] = numLights;
-				j["tag"]       = currentState.tag;
-				for (unsigned int i = 0; i < numLights; i++) {
-					Color c = currentState.lights[i];
-					j["light" + std::to_string(i)] = fmt::format("{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
-				}
-
-				std::string s = j.dump();
-				monitorMessage.resize(LWS_PRE + s.size(), 0);
-				memcpy(&monitorMessage[LWS_PRE], s.data(), s.size());
+				updateMonitorMessage();
 
 				LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
 
