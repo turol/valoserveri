@@ -497,7 +497,13 @@ void Serveri::run() {
 			if (!monitorConnections.empty()) {
 				// TODO: write light state to json
 				json j;
-				j["numLights"] = 1;
+				unsigned int numLights = currentState.lights.size();
+				j["numLights"] = numLights;
+				j["tag"]       = currentState.tag;
+				for (unsigned int i = 0; i < numLights; i++) {
+					Color c = currentState.lights[i];
+					j["light" + std::to_string(i)] = fmt::format("{:02x}{:02x}{:02x}", c.red, c.green, c.blue);
+				}
 
 				std::string s = j.dump();
 				monitorMessage.resize(LWS_PRE + s.size(), 0);
