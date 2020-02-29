@@ -117,6 +117,11 @@ DMXController::~DMXController() {
 }
 
 
+LightsConfig DMXController::getLightsConfig() const {
+	return lightConfig;
+}
+
+
 void DMXController::setLightColor(unsigned int index, const Color &color) {
 	auto it = lightConfig.lights.find(index);
 	if (it == lightConfig.lights.end()) {

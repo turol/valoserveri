@@ -27,14 +27,20 @@ using namespace nlohmann;
 using namespace valoserveri;
 
 
+struct LightState {
+	std::string                              tag;
+	std::unordered_map<unsigned int, Color>  lights;
+};
+
+
 class Serveri {
 	int                         UDPfd;
 
 	// TODO: quit signaled, quit pipe
 
-	LightPacket                 currentState;
-
 	DMXController               dmx;
+
+	LightState                  currentState;
 
 	size_t                      buflen;
 
@@ -199,7 +205,13 @@ Serveri::Serveri(const Config &config)
 {
 	globalServeri = this;
 
-	// TODO: initialize currentState
+	// initialize currentState
+	{
+		auto lightsConfig = dmx.getLightsConfig();
+		for (const auto &l : lightsConfig.lights) {
+			currentState.lights.emplace(l.first, Color());
+		}
+	}
 
 	int port = config.get("global", "udpPort", 9909);
 
@@ -395,12 +407,19 @@ void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 	auto packet = parseLightPacket(buf);
 	LOG_INFO("number lights in packet: {}", packet.lights.size());
 
+	currentState.tag = packet.tag;
+
 	for (const auto &l : packet.lights) {
 		LOG_DEBUG("{}: {} {} {}", l.index, l.color.red, l.color.green, l.color.blue);
 		dmx.setLightColor(l.index, l.color);
-	}
 
-	// TODO: update currentState
+		// update currentState
+		// only update if found so clients spamming invalid lights doesn't show up on monitor
+		auto it = currentState.lights.find(l.index);
+		if (it != currentState.lights.end()) {
+			it->second = l.color;
+		}
+	}
 
 	// TODO: only set dirty if anything changed
 	lightsDirty = true;

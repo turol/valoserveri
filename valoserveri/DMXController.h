@@ -57,10 +57,10 @@ struct LightsConfig {
 
 	~LightsConfig() {}
 
-	LightsConfig(const LightsConfig &) noexcept            = delete;
+	LightsConfig(const LightsConfig &)                     = default;
 	LightsConfig(LightsConfig &&) noexcept                 = default;
 
-	LightsConfig &operator=(const LightsConfig &) noexcept = delete;
+	LightsConfig &operator=(const LightsConfig &)          = default;
 	LightsConfig &operator=(LightsConfig &&) noexcept      = default;
 
 
@@ -116,6 +116,7 @@ public:
 
 	~DMXController();
 
+	LightsConfig getLightsConfig() const;
 
 	void setLightColor(unsigned int index, const Color &color);
 
