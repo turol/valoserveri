@@ -542,9 +542,11 @@ void Serveri::run() {
 
 #ifdef USE_LIBWEBSOCKETS
 
-			if (!monitorConnections.empty()) {
-				updateMonitorMessage();
+			// always update message so if we get our first monitor connections
+			// it gets up-to-date info
+			updateMonitorMessage();
 
+			if (!monitorConnections.empty()) {
 				LOG_DEBUG("send updates to {} monitoring connections", monitorConnections.size());
 
 				for (auto &c : monitorConnections) {
