@@ -17,6 +17,10 @@
 
 using namespace nlohmann;
 
+
+#define ADDRSIZE 16
+
+
 #endif  // USE_LIBWEBSOCKETS
 
 
@@ -97,7 +101,7 @@ static Serveri *globalServeri = nullptr;
 #ifdef USE_LIBWEBSOCKETS
 
 
-static int callback(struct lws * /* wsi */, enum lws_callback_reasons reason, void * /* user */, void *in, size_t len) {
+static int callback(struct lws *wsi, enum lws_callback_reasons reason, void * /* user */, void *in, size_t len) {
 	// TODO: get Serveri from user
 
 	switch (reason) {
@@ -116,6 +120,12 @@ static int callback(struct lws * /* wsi */, enum lws_callback_reasons reason, vo
 		break;
 
 	case LWS_CALLBACK_RECEIVE: {
+		std::array<char, ADDRSIZE> addr_;
+		memset(addr_.data(), 0, addr_.size());
+		lws_get_peer_simple(wsi, addr_.data(), addr_.size() - 1);
+
+		LOG_DEBUG("Received websocket packet from {}", addr_.data());
+
 		globalServeri->lightPacket(nonstd::make_span(reinterpret_cast<const char *>(in), len));
 	} break;
 
@@ -344,9 +354,6 @@ void Serveri::setFDEvents(int fd, int events) {
 		it++;
 	}
 }
-
-
-#define ADDRSIZE 16
 
 
 void Serveri::addMonitor(struct lws *wsi) {
