@@ -262,6 +262,8 @@ Serveri::Serveri(const Config &config)
 
 #ifdef USE_LIBWEBSOCKETS
 
+	monitorMessage.resize(LWS_PRE, 0);
+
 	{
 		protocols.reserve(3);
 
