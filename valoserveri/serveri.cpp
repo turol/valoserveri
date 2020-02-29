@@ -10,6 +10,7 @@
 #include <libwebsockets.h>
 
 #include <cassert>
+#include <unordered_set>
 
 #ifdef USE_LIBWEBSOCKETS
 
@@ -22,6 +23,9 @@ using namespace nlohmann;
 
 
 #endif  // USE_LIBWEBSOCKETS
+
+
+static const char tagWhitelist[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ 0123456789!#%&/()[]{}=?+-*,.;:|<>";
 
 
 using namespace valoserveri;
@@ -40,6 +44,7 @@ class Serveri {
 
 	DMXController               dmx;
 
+	std::unordered_set<char>    whitelist;
 	LightState                  currentState;
 
 	size_t                      buflen;
@@ -204,6 +209,11 @@ Serveri::Serveri(const Config &config)
 , lightsDirty(true)  // so we write known state on startup
 {
 	globalServeri = this;
+
+	whitelist.reserve(sizeof(tagWhitelist));
+	for (size_t i = 0; i < sizeof(tagWhitelist); i++) {
+		whitelist.insert(tagWhitelist[i]);
+	}
 
 	// initialize currentState
 	{
@@ -407,7 +417,22 @@ void Serveri::lightPacket(const nonstd::span<const char> &buf) {
 	auto packet = parseLightPacket(buf);
 	LOG_INFO("number lights in packet: {}", packet.lights.size());
 
-	currentState.tag = packet.tag;
+	{
+		std::string tag = packet.tag;
+		auto it = tag.begin();
+		while (it != tag.end()) {
+			if (whitelist.find(*it) == whitelist.end()) {
+				// bad character, erase
+				it = tag.erase(it);
+			} else {
+				++it;
+			}
+		}
+
+		currentState.tag = tag;
+
+		// TODO: don't allow if empty tag? config option?
+	}
 
 	for (const auto &l : packet.lights) {
 		LOG_DEBUG("{}: {} {} {}", l.index, l.color.red, l.color.green, l.color.blue);
