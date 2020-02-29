@@ -4,38 +4,75 @@
 <head>
 <meta charset="utf-8"/>
 <title>Valot</title>
+<style>
+    .light { width: 100px; height: 100px; margin: 0 4px 4px 0; display: inline-block; }
+    .light__color { background: rgba(0,0,0,.5); color: #fff; }
+</style>
 </head>
 
 <body>
+
+Palvelin: <input id="palvelin" value="127.0.0.1" /> <br />
+Portti: <input id="port" value="9910" /> <br />
+<button id="yhdista"  >Yhdistä</button> <br />
+<button id="katkaise" >Katkaise</button> <br />
+
+<div>Status: <span id="status">(status)</span></div>
+
+</div>
+
+<div id="content"></div>
+<div id="viz"></div>
+
 <script>
 
-var socket;
+document.getElementById("yhdista").addEventListener("click", () => yhdista(true));
+document.getElementById("katkaise").addEventListener("click", katkaise);
 
-function yhdista() {
+/** @type {WebSocket} */
+let socket = null;
+let autoReconnect = true;
+
+function updateStatus(status) {
+    document.getElementById("status").innerHTML = status;
+}
+
+function yhdista(force) {
+    if (socket) {
+        if (force) {
+            socket.close();
+        } else {
+            return;
+        }
+    }
     const host = document.getElementById("palvelin").value;
     const port = document.getElementById("port").value;
     console.log("yhdistä " + host);
 
+    updateStatus("Connecting");
+
     socket = new WebSocket("ws://"+host+":"+port, "monitor");
 
     socket.onclose = function (event) {
-        // alert("Socket closed!");
         console.log("Socket closed! ", event);
+        updateStatus("Closed");
+        socket = null;
+        if (autoReconnect) {
+            setTimeout(yhdista, 3000);
+        }
     }
-    
+
     socket.onerror = function (event) {
         console.log("Socket error! ", event);
     }
 
-    socket.onmessage = function incoming(data) {
-        console.log("received data: ", data);
-      
-        // TODO: do something better with it
-        var j = JSON.parse(data.data);
-        document.getElementById("content").textContent = JSON.stringify(j, null, 2);
+    socket.onmessage = function incoming(message) {
+        const parsed = JSON.parse(message.data);
+        updateViz(parsed);
     };
 
     socket.onopen = function (event) {
+        updateStatus("Open");
         console.log("Socket opened ", event);
     };
 };
@@ -43,23 +80,51 @@ function yhdista() {
 function katkaise() {
     console.log("katkaise");
     if (socket) {
+        autoReconnect = false;
         socket.close();
         socket = null;
     }
-};
-</script>
+}
 
-Palvelin: <input id="palvelin" value="127.0.0.1" /> <br />
-Portti: <input id="port" value="9910" /> <br />
-<button id="yhdista"  >Yhdistä</button> <br />
-<button id="katkaise" >Katkaise</button> <br />
+const vizContainer = document.getElementById("viz")
+let lastNumLights = null;
 
-<div id="content"/>
+function updateViz(data) {
+    const numLights = data.numLights;
 
-<script>
+    // Possibly pointless micro-optimization: Try to avoid rebuilding the HTML every time.
+    const fullUpdate = lastNumLights !== numLights;
 
-document.getElementById("yhdista").addEventListener("click", yhdista);
-document.getElementById("katkaise").addEventListener("click", katkaise);
+    if (fullUpdate) {
+        vizContainer.innerHTML = "";
+
+        const tagHolder = document.createElement("div");
+        tagHolder.id = "tag-holder";
+        vizContainer.append(tagHolder);
+    }
+
+    document.getElementById("tag-holder").innerText = `Last update by: ${data.tag}`;
+
+    for (let i = 0; i < numLights; i++) {
+        const id = `light${i}`;
+        const lightStatus = data[id];
+
+        // Update existing light box, or create a new one as needed.
+        const light = fullUpdate ? document.createElement("div") : document.getElementById(id);
+        light.id = id;
+        light.className = "light";
+        light.style = `background: #${lightStatus}`;
+        light.innerHTML = `<div class="light__color">${i}: ${lightStatus}</div>`;
+
+        if (fullUpdate) {
+            vizContainer.append(light)
+        }
+    }
+
+    lastNumlights = numLights;
+}
+
+yhdista();
 
 </script>
 
