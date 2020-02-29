@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8"/>
+<title>Valot</title>
+</head>
+
+<body>
+<script>
+
+var socket;
+
+function yhdista() {
+    const host = document.getElementById("palvelin").value;
+    const port = document.getElementById("port").value;
+    console.log("yhdistä " + host);
+
+    socket = new WebSocket("ws://"+host+":"+port, "monitor");
+
+    socket.onclose = function (event) {
+        // alert("Socket closed!");
+        console.log("Socket closed! ", event);
+    }
+    
+    socket.onerror = function (event) {
+        console.log("Socket error! ", event);
+    }
+
+    socket.onmessage = function incoming(data) {
+        console.log("received data: ", data);
+      
+        // TODO: do something better with it
+        var j = JSON.parse(data.data);
+        document.getElementById("content").textContent = JSON.stringify(j, null, 2);
+    };
+
+    socket.onopen = function (event) {
+        console.log("Socket opened ", event);
+    };
+};
+
+function katkaise() {
+    console.log("katkaise");
+    if (socket) {
+        socket.close();
+        socket = null;
+    }
+};
+</script>
+
+Palvelin: <input id="palvelin" value="127.0.0.1" /> <br />
+Portti: <input id="port" value="9910" /> <br />
+<button id="yhdista"  >Yhdistä</button> <br />
+<button id="katkaise" >Katkaise</button> <br />
+
+<div id="content"/>
+
+<script>
+
+document.getElementById("yhdista").addEventListener("click", yhdista);
+document.getElementById("katkaise").addEventListener("click", katkaise);
+
+</script>
+
+</body>
+</html>
