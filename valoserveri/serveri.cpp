@@ -173,6 +173,8 @@ static int callback_monitor(struct lws *wsi, enum lws_callback_reasons reason, v
 	case LWS_CALLBACK_ESTABLISHED:
 		assert(wsi);
 		serveri->addMonitor(wsi);
+		// send initial state to it
+		lws_callback_on_writable(wsi);
 		break;
 
 	case LWS_CALLBACK_CLOSED:
