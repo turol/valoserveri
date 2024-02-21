@@ -1,6 +1,8 @@
 #include "valoserveri/DMXController.h"
 #include "valoserveri/Logger.h"
 
+
+#include <array>
 #include <fmt/format.h>
 
 
