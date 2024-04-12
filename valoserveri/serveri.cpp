@@ -507,7 +507,7 @@ void Serveri::run() {
 					ssize_t len = recvfrom(UDPfd, buffer.data(), buffer.size(), 0, reinterpret_cast<struct sockaddr *>(&from), &fromLength);
 					LOG_DEBUG("received {} bytes from \"{}\":{}\n", len, inet_ntoa(from.sin_addr), ntohs(from.sin_port));
 
-					lightPacket(nonstd::make_span(buffer));
+					lightPacket(nonstd::make_span(buffer).first(len));
 
 					fd.revents = 0;
 
